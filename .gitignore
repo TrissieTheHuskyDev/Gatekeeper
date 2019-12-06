@@ -1,0 +1,6 @@
+# ignore these folders
+__pycache__
+
+# ignore these files
+secret
+creepydb
