@@ -4,3 +4,4 @@ __pycache__
 # ignore these files
 secret
 creepydb
+settings
