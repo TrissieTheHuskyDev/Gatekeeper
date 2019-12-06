@@ -160,7 +160,7 @@ def start(secret_file=r".\secret"):
     bot.conn = conn
     bot.settings = settings["bot_settings"]
     bot.settings_manager = settings_manager
-    TOKEN = 'NjUwNzM5MjM4NDQyMzY5MDQ4.XePuKQ.CUj92A-1mVsRxqZIKWCVCHkNt2c'
+    TOKEN = ""
     
     bot.run(TOKEN)
     
