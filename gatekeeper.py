@@ -46,6 +46,7 @@ async def lead_brd(ctx, sql_key, board_header, count_str, *args,
 # message/command handler
 @bot.event
 async def on_message(message):
+    await add_message(message)
     if message.author != bot.user:
         try:
             if message.author.guild_permissions.manage_messages:

@@ -86,6 +86,16 @@ async def remove_roles(user, roles):
 
  
 # misc helpers
+async def add_message(message):
+    """log a message to the SQL db"""
+    message_values = (
+        message.id, message.author.id, message.channel.id,
+        message.channel.name, message.guild.id, 
+        message.clean_content, message.created_at
+    )
+    exec_sql(SQL["ADD_MESSAGE"], message_values)
+
+
 def get_users(message, *args):
     """returns a list of discord.User objects from a series 
         of id's"""
