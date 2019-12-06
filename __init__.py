@@ -144,7 +144,7 @@ def start(secret_file=r".\secret"):
         starts the program by loading secrets file and setting things
         into motion
     """
-    settings_manager = Program_Settings(reset=True, test_mode=True)
+    settings_manager = Program_Settings(reset=False, test_mode=False)
     settings = settings_manager.settings
     secrets = Secrets(settings["secret_file"])
     TOKEN = secrets.secret["token"]
@@ -160,7 +160,6 @@ def start(secret_file=r".\secret"):
     bot.conn = conn
     bot.settings = settings["bot_settings"]
     bot.settings_manager = settings_manager
-    TOKEN = ""
     
     bot.run(TOKEN)
     
