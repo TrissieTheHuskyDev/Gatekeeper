@@ -58,7 +58,6 @@ async def none_found(ctx, *args):
 class join_args:
     result = ""
     def __init__(self, args):
-        print(args)
         self.result = ' '.join(args)
         
 

@@ -23,6 +23,7 @@ from discord import Client
 from discord.ext import commands
 
 
+
 # custom imports
 try:
     from setting_manager import *
@@ -99,9 +100,7 @@ async def manage_roles(user, roles):
     
 # misc helpers
 async def can_post(message):
-    """check if user can post links"""
-    if await check_whitelist(message):
-        return
+    """check if user can post links based on numbed of posts made"""
     n_msg = exec_sql(SQL["MIN_MESSAGES"], (message.author.id,)
         ).fetchone()[0]
     if n_msg < bot.settings["num_messages"]:
@@ -115,7 +114,7 @@ async def can_post(message):
         await message.delete()
         
 
-async def check_whitelist(message):
+def check_whitelist(message):
     """check message against site whitelist"""
     mess = message.content.lower()
     for site in bot.settings["whitelist"]:
@@ -131,7 +130,10 @@ async def add_message(message):
         message.channel.name, message.guild.id, 
         message.clean_content, message.created_at
     )
-    exec_sql(SQL["ADD_MESSAGE"], message_values)
+    try:
+        exec_sql(SQL["ADD_MESSAGE"], message_values)
+    except IntegrityError:
+        pass
 
 
 def get_users(message, *args):
@@ -159,26 +161,18 @@ def exec_sql(sql_string, values):
         return cur
 
 
-def exit_bot(bot, restart=False):
+def exit_bot():
     """Helper to exit bot and then exit system"""
-    bot.clear()
-    try:
-        bot.loop.create_task(bot.logout())
-        bot.loop.create_task(bot.http.close())
-    except:
-        pass
-    if restart:
-        return
-    sys.exit()
+    os.system(r".\bin\kill.bat {}".format(os.getpid()))
 
 
-def restart_bot(bot):
+def restart_bot():
     """restarts bot"""
     print("\n\n")
     frame = inspect.stack()[1].frame
     file_name = frame.f_code.co_filename
-    exit_bot(bot, restart=True)
-    os.system("python {file}".format(file=file_name))
+    os.system(r".\bin\restart.bat "
+        +"{} {} {}".format(os.getpid(), sys.executable, file_name))
 
 
 # bot initialization
@@ -192,8 +186,11 @@ def start(secret_file=r".\secret"):
         starts the program by loading secrets file and setting things
         into motion
     """
-    settings_manager = Program_Settings(reset=False, test_mode=False)
+    test_mode = False
+    settings_manager = Program_Settings(reset=False, test_mode=test_mode)
+    settings_manager.settings_integrity(test_mode=test_mode)
     settings = settings_manager.settings
+    
     secrets = Secrets(settings["secret_file"])
     TOKEN = secrets.secret["token"]
     conn = create_db_connection(settings["db_file"])
@@ -204,7 +201,7 @@ def start(secret_file=r".\secret"):
         try:
             raise Exception("No connection to Database")
         except Exception as exc:
-            print(exc)
+            traceback.print_exc()
     bot.conn = conn
     bot.settings = settings["bot_settings"]
     bot.settings_manager = settings_manager

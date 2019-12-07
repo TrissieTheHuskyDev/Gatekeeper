@@ -64,17 +64,20 @@ class Program_Settings:
    
     def __init__(self, reset=False, test_mode=False):
         """opens settings file if exists, creates otherwise"""
-        if not os.path.exists("settings") or reset:
-            self.default_settings(test_mode=test_mode)
+        if (not os.path.exists("settings")) or (reset):
+            self.settings = self.default_settings(test_mode=test_mode)
+            self.set_settings(self.settings)
         else:
             self.load_settings()
             
+            
     def default_settings(self, settings_file="settings", test_mode=False):
         """reset settings to default values"""
-        self.settings = {
-            
+        settings = {
+            "setting_version": "v0.1.3",
             "db_file": r"creepydb",
-            "secret_file": r".\secret",
+            "secret_file": ".\\secret",
+            "settings_file": ".\\settings",
             # settings used and saved to bot memory. These are absolutely vital to the bot's operation, don't change them unless needed.
             "bot_settings":{
                 "num_messages": 5,
@@ -120,14 +123,33 @@ class Program_Settings:
                 }
             }
         }
-        self.set_settings(self.settings)
+        return settings
         
-    def set_settings(self, settings, settings_file="settings"):
+    def settings_integrity(self, test_mode=False):
+        """check settings to ensure they contain default settings"""
+        default_settings = self.default_settings(test_mode=test_mode)
+        setting_version = self.settings.get(
+            "setting_version", None)
+        if setting_version != default_settings["setting_version"]:
+            answer = input("Settings mismatch detected, do you want to\n"
+                + " reset to default (Y/N): ").lower()
+            if answer.startswith("n"):
+                print("Attempting to continue, errors may occur with\n"
+                    +" certain commands or at unexpected times")
+                return
+            self.set_settings(default_settings)
+
+    def set_settings(self, settings):
         """function to update the settings file and instance settings"""
+        settings_file = settings.get("settings_file", ".\\settings")
         with open(settings_file, "wb") as fd:
             self.settings = pickle.dump(settings, fd)
         self.load_settings()
             
-    def load_settings(self, settings_file="settings"):
+    def load_settings(self):
+        if self.settings:
+            settings_file = self.settings.get("settings_file", ".\\settings")
+        else:
+            settings_file = ".\\settings"
         with open(settings_file, "rb") as fd:
             self.settings = pickle.load(fd)

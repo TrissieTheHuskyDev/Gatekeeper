@@ -2,11 +2,13 @@
 # python3
 # imports and helper functions contained within __init__
 
+import os
+import sys
 try:
     from __init__ import *
 except:
     print("__init__.py is missing or corrupt, please download a new version")
-    sys.exit
+    sys.exit()
 try:
     from report import *
 except:
@@ -51,7 +53,7 @@ async def on_message(message):
         return
     try:
         mess = message.content.lower()
-        if "http" in mess:
+        if "http" in mess and not check_whitelist(message):
             await can_post(message)
         if message.author.guild_permissions.manage_messages:
             try:
@@ -75,7 +77,7 @@ async def die(ctx):
     """will shut down the bot, don't do that (full only)"""
     if ctx.author.guild_permissions.manage_channels:
         await ctx.send("Quitting")
-        exit_bot(bot)
+        exit_bot()
     else:
         await ctx.send("You don't have access to this command")
     
@@ -84,7 +86,7 @@ async def die(ctx):
 async def restart(ctx):
     if ctx.author.guild_permissions.manage_channels:
         await ctx.send("Restarting")
-        restart_bot(bot)
+        restart_bot()
     else:
         await ctx.send("You don't have access to this command")
         
@@ -334,7 +336,9 @@ logger = logging.getLogger('information')
 if __name__ == "__main__":
     #main(bot)
     try:
+        print("Logging in...")
         start()
     except:
+        traceback.print_exc()
         sys.exit()
 
