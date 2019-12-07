@@ -11,7 +11,10 @@
  
  # Prerequisites
   3.7.2 >= python
+  
   1.0.0.a >= discord.py >= 1.2.5
+  
+  windows 7+
   
  # Installing
   Make sure you have the most up to date version of discord.py with
