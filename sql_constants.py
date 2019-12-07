@@ -19,7 +19,9 @@ SQL_STRINGS = {
         frozen INTEGER,
         youngling INTEGER
     ); """,
-
+    
+    "MIN_MESSAGES": "SELECT count(*) FROM messages where author =? ",
+    
     "VOTERS": "SELECT author FROM messages WHERE channelid = ? AND created_at >= datetime('now', '-7 days') GROUP BY author HAVING COUNT(*) > ?;",
     
     "LEADERBOARD": "SELECT author, COUNT(id) FROM messages WHERE created_at >= datetime('now', '-7 days') AND author != 356878329602768897 AND author != ? AND guildid = ? GROUP BY author ORDER BY COUNT(id) DESC LIMIT ?;",

@@ -22,6 +22,7 @@ import discord
 from discord import Client
 from discord.ext import commands
 
+
 # custom imports
 try:
     from setting_manager import *
@@ -35,6 +36,7 @@ except:
     print("sql_constants.py is missing or corrupt, please download "
         +"a new version")
     sys.exit()
+
 
 # SQL functions
 def create_db_connection(db_file):
@@ -84,8 +86,44 @@ async def remove_roles(user, roles):
     for role in roles:
         await user.remove_roles(bot.roles[role])
 
- 
+
+async def add_roles(user, roles):
+    for role in roles:
+        await user.add_roles(bot.roles[role])
+
+
+async def manage_roles(user, roles):
+    await add_roles(user,roles[0])
+    await remove_roles(user,roles[1])
+    
+    
 # misc helpers
+async def can_post(message):
+    """check if user can post links"""
+    if await check_whitelist(message):
+        return
+    n_msg = exec_sql(SQL["MIN_MESSAGES"], (message.author.id,)
+        ).fetchone()[0]
+    if n_msg < bot.settings["num_messages"]:
+        await manage_roles(message.author,(("freeze",),("chirper",)))
+        msg = "@here Freezing user: {} Message Count: {}".format(
+            message.author.mention, n_msg)
+        await bot.logs.send(msg)
+        embd = discord.Embed(title=message.channel.name, color=0x00ff00)
+        embd.add_field(name="Content", value=message.content, inline=False)
+        await bot.logs.send(embed=embd)
+        await message.delete()
+        
+
+async def check_whitelist(message):
+    """check message against site whitelist"""
+    mess = message.content.lower()
+    for site in bot.settings["whitelist"]:
+        if site in mess:
+            return True
+    return False
+
+
 async def add_message(message):
     """log a message to the SQL db"""
     message_values = (
@@ -143,11 +181,11 @@ def restart_bot(bot):
     os.system("python {file}".format(file=file_name))
 
 
-
-
+# bot initialization
 bot = commands.Bot(command_prefix=("gk!", "!"), case_insensitive=True,
     description="A bot for basic commands", self_bot=False,
     help_command=None)
+
 
 def start(secret_file=r".\secret"):
     """

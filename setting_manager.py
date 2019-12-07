@@ -72,16 +72,20 @@ class Program_Settings:
     def default_settings(self, settings_file="settings", test_mode=False):
         """reset settings to default values"""
         self.settings = {
-            "num_messages": 5,
+            
             "db_file": r"creepydb",
             "secret_file": r".\secret",
             # settings used and saved to bot memory. These are absolutely vital to the bot's operation, don't change them unless needed.
             "bot_settings":{
+                "num_messages": 5,
                 "gaius": 356878329602768897,
                 "logs": (627500108618924052 if not test_mode else 
                     652492330942595082),
                 "guild": (539925898128785460 if not test_mode else 
                     517928216040833038),
+                "whitelist": [
+                    "www.youtube.com"
+                    ],
                 "roles": OrderedDict(
                    [["chirper"  , (539929792938770436 if 
                         not test_mode else 651519729961271309)],

@@ -47,20 +47,26 @@ async def lead_brd(ctx, sql_key, board_header, count_str, *args,
 @bot.event
 async def on_message(message):
     await add_message(message)
-    if message.author != bot.user:
-        try:
-            if message.author.guild_permissions.manage_messages:
-                try:
-                    if message.content.lower().startswith("gk! "):
-                        message.content = "gk!"+message.content[4:]
-                except:
-                    traceback.print_exc()
-                    sys.exit()
-                await bot.process_commands(message)
-            else:
-                return
-        except AttributeError:
+    if message.author == bot.user:
+        return
+    try:
+        mess = message.content.lower()
+        if "http" in mess:
+            await can_post(message)
+        if message.author.guild_permissions.manage_messages:
+            try:
+                if message.content.lower().startswith("gk! "):
+                    message.content = "gk!"+message.content[4:]
+            except:
+                traceback.print_exc()
+                sys.exit()
+            await bot.process_commands(message)
+        else:
             return
+    except AttributeError:
+        return
+    except:
+        traceback.print_exc()
 
 
 # full admin only commands
@@ -88,6 +94,7 @@ async def messagemin(ctx, m_min):
     try:
         bot.settings["num_messages"] = int(m_min)
         bot.settings_manager.set_settings(bot.settings)
+        
         msg = ("Minimum message count for linking set to: {m_min}.".
             format(m_min=m_min))
     except ValueError as exc:
