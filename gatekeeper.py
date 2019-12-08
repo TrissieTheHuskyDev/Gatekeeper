@@ -59,7 +59,6 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_message(message):
     await add_message(message)
-    print(message.channel.permissions_for(message.author).manage_messages)
     if message.author == bot.user:
         return
     try:
@@ -77,6 +76,20 @@ async def on_message(message):
         traceback.print_exc()
     except:
         traceback.print_exc()
+        
+@bot.event
+async def on_member_join(member):
+    delta = datetime.utcnow() - member.created_at
+    if delta.days < bot.TIME:
+        await member.add_roles(bot.roles["youngling"])
+        log = "@here {} / {} age: {} adding role.".format(
+            member.name, member.mention, delta.days)
+        await bot.logs.send(log)
+    chirpers = (exec_sql(SQL["IS_FROZEN"], (member.id,)).
+        fetchone())
+    if chirpers is not None:
+        if chirpers[0] == 1:
+            await member.add_roles(bot.roles["freeze"])
 
 
 # full admin only commands
@@ -197,7 +210,7 @@ async def thaw(ctx, *args):
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def freeze(ctx, *args):
-    roles = ["chirper", "chirper2", "chirper3", "chirper4"]
+    del_roles = ["chirper", "chirper2", "chirper3", "chirper4"]
     users = get_users(ctx.message, *args)
     for user in users:
         if(bot.roles["freeze"] in user.roles):
@@ -206,7 +219,7 @@ async def freeze(ctx, *args):
         else:
             await user.add_roles(bot.roles["freeze"])
             store_roles(user, 1)
-            await remove_roles(user, roles)
+            await remove_roles(user, del_roles)
             msg = "Froze user: {user_mention}".format(
                 user_mention=user.mention)
         await ctx.send(msg)

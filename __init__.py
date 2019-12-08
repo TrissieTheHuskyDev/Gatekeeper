@@ -86,6 +86,7 @@ def store_roles(user, to_freeze):
     """create or replace SQL entry with roles for user"""
     role_store = OrderedDict()
     role_store["id"] = user.id
+    
     user_roles = [role.name for role in user.roles]
     for key in bot.settings["roles"].keys():
         role_store[key] = is_role_set(user_roles, key)
@@ -230,6 +231,7 @@ def start(secret_file=r".\secret"):
     
     # setup and process secret
     secrets = Secrets(settings["secret_file"])
+    bot.TIME = secrets.secret["time"]
     TOKEN = secrets.secret["token"]
     
     # setup sql database and make sure that required tables are added

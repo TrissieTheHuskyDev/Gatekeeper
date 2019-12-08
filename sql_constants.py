@@ -56,6 +56,8 @@ SQL_STRINGS = {
     
     "RETRIEVE_ROLE": "SELECT chirper, chirper2, chirper3, chirper4 FROM roles WHERE id = ?;",
     
+    "IS_FROZEN": "SELECT frozen FROM roles WHERE id = ?;",
+    
     "REPORTS":{
         "MONTH": [
             "SELECT COUNT(*) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-30 days')",

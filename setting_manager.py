@@ -8,7 +8,10 @@ import pickle, sys
 
 class Secrets:
     """class to hold and edit secret file"""
-    secret = {"token":""}
+    secret = {
+        "token":"",
+        "time": 0
+    }
     secret_file=r""
     def __init__(self, secret_file):
         """
@@ -44,13 +47,21 @@ class Secrets:
 For help setting up and retrieving the token of a bot go to
 https://discordpy.readthedocs.io/en/latest/discord.html"""
         token = ""
+        time = ""
         token = input("Enter a token or help: ")
+        try:
+            time = input("Enter time until youngling removed (days): ")
+            time = int(time)
+        except:
+            print("invalid entry for days ({})".format(time))
+            sys.exit()
         if token == "help":
             print(help_msg)
             bot.loop.create_task(bot.http.close())
             sys.exit()
         else:
             self.secret["token"] = token
+            self.secret["time"] = time
             with open(self.secret_file, "wb") as fd:
                 pickle.dump(self.secret, fd)
             print("Secret file named {secret_file} created.".format(
