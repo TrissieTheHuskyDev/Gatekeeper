@@ -77,6 +77,9 @@ async def die(ctx):
     """will shut down the bot, don't do that (full only)"""
     if ctx.author.guild_permissions.manage_channels:
         await ctx.send("Quitting")
+        await bot.logout()
+        await bot.http.close()
+        bot.loop.close()
         exit_bot()
     else:
         await ctx.send("You don't have access to this command")
@@ -86,6 +89,7 @@ async def die(ctx):
 async def restart(ctx):
     if ctx.author.guild_permissions.manage_channels:
         await ctx.send("Restarting")
+        await bot.http.close()
         restart_bot()
     else:
         await ctx.send("You don't have access to this command")
@@ -258,10 +262,55 @@ async def _mod_score_board(ctx, *args):
         "Punishments", *args, count_display=False)
 
 
-@bot.command()
-async def warm(ctx, *args):
-    #implement later
-    pass
+async def _change_temperature(ctx, user, temperature):
+    """warms/cools user(s) specified"""
+
+    if bot.fun_roles["heatproof"] in user.roles:
+        passed = False
+        msg = "I can't {} {} they're wearing thermal undies.".format(
+            temperature, user.mention,)
+    else:
+        passed = True
+        msg = "Ok, {} {}".format(user.mention, random.choice(
+            bot.settings[temperature+"_responses"]))
+    await ctx.send(msg)
+    return passed
+
+
+@bot.command(name="warm")
+async def _warm(ctx, *args):
+    """warm a user and then add task to remove warm role"""
+    users = get_users(ctx.message, *args)
+    for user in users:
+        if (bot.fun_roles["permafrost"] in user.roles):
+            msg = "I can't warm {} they're permafrozen".format(
+                user.mention)
+            await ctx.send(msg)
+            return
+        if not await _change_temperature(ctx, user, "warm"):
+            return
+        # add role to user and start timer, remove role after timer
+        #   expires.
+        warmin = asyncio.create_task(temp_decay(
+            user, bot.fun_roles["warm"]))
+            
+@bot.command(name="cool")
+async def _cool(ctx, *args):
+    """cool a user and then add task to remove cool role"""
+    users = get_users(ctx.message, *args)
+    for user in users:
+        if (bot.fun_roles["burning"] in user.roles):
+            msg = "I can't cool {} they're burning".format(
+                user.mention)
+            await ctx.send(msg)
+            return
+        if not await _change_temperature(ctx, user, "cool"):
+            return
+        coolin = asyncio.create_task(temp_decay(
+            user, bot.fun_roles["cold"]))
+
+        
+
 
 @commands.command(name="help")
 async def _custom_help(ctx, *args):
@@ -336,7 +385,6 @@ logger = logging.getLogger('information')
 if __name__ == "__main__":
     #main(bot)
     try:
-        print("Logging in...")
         start()
     except:
         traceback.print_exc()

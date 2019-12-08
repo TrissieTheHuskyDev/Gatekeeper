@@ -74,7 +74,7 @@ class Program_Settings:
     def default_settings(self, settings_file="settings", test_mode=False):
         """reset settings to default values"""
         settings = {
-            "setting_version": "v0.1.3",
+            "setting_version": "v0.1.4",
             "db_file": r"creepydb",
             "secret_file": ".\\secret",
             "settings_file": ".\\settings",
@@ -89,6 +89,7 @@ class Program_Settings:
                 "whitelist": [
                     "www.youtube.com"
                     ],
+                "temp_decay": 900,
                 "roles": OrderedDict(
                    [["chirper"  , (539929792938770436 if 
                         not test_mode else 651519729961271309)],
@@ -112,7 +113,11 @@ class Program_Settings:
                     "is now snuggled up with their favorite stuffy",
                     "is now snuggling their favorite pet",
                     "is now cozy by the fire",
-                    "is now warm and fuzzy inside"
+                    "is now warm and fuzzy inside",
+                ],
+                "cool_responses": [
+                    "is now cold and shivering", 
+                    "is freezing",
                 ],
                 "fun_roles":{
                     "warm":       (651435846821609472 if not test_mode else 652140899597549578),

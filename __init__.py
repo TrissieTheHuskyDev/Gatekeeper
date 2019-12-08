@@ -1,6 +1,7 @@
 #!/usr/env/bin python3
 
 #stdlib imports
+import argparse
 import asyncio
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -97,6 +98,10 @@ async def manage_roles(user, roles):
     await add_roles(user,roles[0])
     await remove_roles(user,roles[1])
     
+async def temp_decay(user, role):
+    await user.add_roles(role)
+    await asyncio.sleep(bot.settings["temp_decay"])
+    await user.remove_roles(role)
     
 # misc helpers
 async def can_post(message):
@@ -163,6 +168,10 @@ def exec_sql(sql_string, values):
 
 def exit_bot():
     """Helper to exit bot and then exit system"""
+    '''loop = asyncio.get_event_loop()
+    loop.create_task(bot.http.close())
+    loop.create_task(bot.logout())'''
+    
     os.system(r".\bin\kill.bat {}".format(os.getpid()))
 
 
@@ -181,18 +190,39 @@ bot = commands.Bot(command_prefix=("gk!", "!"), case_insensitive=True,
     help_command=None)
 
 
+# command line argument handler
+def _args(description="Gatekeeper command line arguments"):
+    """Parse command line arguments"""
+    usage = "gatekeeper.py "
+    parser = argparse.ArgumentParser(description=description, usage=usage)
+    parser.add_argument('-t', '--test_mode', action='store_true')
+    parser.add_argument('-r', '--reset', action='store_true')
+    args = parser.parse_args()
+    return args
+
+
 def start(secret_file=r".\secret"):
     """
         starts the program by loading secrets file and setting things
         into motion
     """
-    test_mode = False
-    settings_manager = Program_Settings(reset=False, test_mode=test_mode)
+    # setup and extract command line arguments
+    cli_args = _args()
+    test_mode = cli_args.test_mode
+    reset = cli_args.reset
+    
+    
+    # setup settings and check settings_integrity
+    
+    settings_manager = Program_Settings(reset=reset, test_mode=test_mode)
     settings_manager.settings_integrity(test_mode=test_mode)
     settings = settings_manager.settings
     
+    # setup and process secret
     secrets = Secrets(settings["secret_file"])
     TOKEN = secrets.secret["token"]
+    
+    # setup sql database and make sure that required tables are added
     conn = create_db_connection(settings["db_file"])
     if conn is not None:
         create_table(conn, SQL["CREATE_MESSAGE_TABLE"])
@@ -202,9 +232,13 @@ def start(secret_file=r".\secret"):
             raise Exception("No connection to Database")
         except Exception as exc:
             traceback.print_exc()
+    
+    # setup local bot memory
     bot.conn = conn
     bot.settings = settings["bot_settings"]
     bot.settings_manager = settings_manager
     
+    # start bot
+    print("Logging in...")
     bot.run(TOKEN)
     
