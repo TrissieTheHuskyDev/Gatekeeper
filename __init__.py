@@ -227,6 +227,7 @@ def start(secret_file=r".\secret"):
     if conn is not None:
         create_table(conn, SQL["CREATE_MESSAGE_TABLE"])
         create_table(conn, SQL["CREATE_ROLES_TABLE"])
+        create_table(conn, SQL["CREATE_MODLOG_TABLE"])
     else:
         try:
             raise Exception("No connection to Database")

@@ -20,6 +20,18 @@ SQL_STRINGS = {
         youngling INTEGER
     ); """,
     
+    "CREATE_MODLOG_TABLE": """ CREATE TABLE IF NOT EXISTS modlogs (
+        id integer PRIMARY KEY,
+        author integer NOT NULL,
+        channelid integer,
+        channelname text,
+        guildid integer,
+        clean_content text,
+        created_at timestamp,
+        user integer,
+        type integer
+        ); """,
+    
     "MIN_MESSAGES": "SELECT count(*) FROM messages where author =? ",
     
     "VOTERS": "SELECT author FROM messages WHERE channelid = ? AND created_at >= datetime('now', '-7 days') GROUP BY author HAVING COUNT(*) > ?;",
