@@ -1,9 +1,8 @@
 #!/usr/env/bin python3
 # created by Atalanta (Atty)
 
-import os
 from collections import OrderedDict
-import pickle, sys
+import json, os, pickle, sys
 
 
 class Secrets:
@@ -35,8 +34,8 @@ class Secrets:
     
     def load_secret(self):
         try:
-            with open(self.secret_file,"rb") as fd:
-                self.secret = pickle.load(fd)
+            with open(self.secret_file,"r") as fd:
+                self.secret = json.load(fd)
         except EOFError:
             print("Token missing or corrupt")
             self.set_secret()
@@ -62,8 +61,8 @@ https://discordpy.readthedocs.io/en/latest/discord.html"""
         else:
             self.secret["token"] = token
             self.secret["time"] = time
-            with open(self.secret_file, "wb") as fd:
-                pickle.dump(self.secret, fd)
+            with open(self.secret_file, "w") as fd:
+                json.dump(self.secret, fd)
             print("Secret file named {secret_file} created.".format(
                 secret_file=self.secret_file))
             self.load_secret()                
