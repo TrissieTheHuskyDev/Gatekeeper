@@ -1,6 +1,7 @@
 # ignore these folders
 __pycache__
 Reference
+testing
 
 # ignore these files
 secret
