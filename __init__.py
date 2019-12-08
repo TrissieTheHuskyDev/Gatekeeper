@@ -16,6 +16,16 @@ from sqlite3 import Error, IntegrityError
 import sys
 import traceback
 
+# check predications
+def can_warm(ctx):
+    return ((bot.fun_roles["warm"] in ctx.message.author.roles or
+        bot.fun_roles["burning"] in ctx.message.author.roles) or
+        ctx.channel.permissions_for(ctx.author).manage_messages)
+        
+def can_cool(ctx):
+    return (bot.fun_roles["cold"] in ctx.message.author.roles or
+        bot.fun_roles["permafrost"] in ctx.message.author.roles or
+        ctx.channel.permissions_for(ctx.author).manage_messages)
 
 # discord.py imports
 import discord

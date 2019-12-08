@@ -44,35 +44,44 @@ async def lead_brd(ctx, sql_key, board_header, count_str, *args,
             row_no += 1
     await ctx.send(msg)
 
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.errors.MissingPermissions):
+        return
+    elif isinstance(error, commands.MissingRole):
+        return
+    elif isinstance(error, commands.NoPrivateMessage):
+        return
+    else:
+        print(error)
 
 # message/command handler
 @bot.event
 async def on_message(message):
     await add_message(message)
+    print(message.channel.permissions_for(message.author).manage_messages)
     if message.author == bot.user:
         return
     try:
         mess = message.content.lower()
         if "http" in mess and not check_whitelist(message):
             await can_post(message)
-        if message.author.guild_permissions.manage_messages:
-            try:
-                if message.content.lower().startswith("gk! "):
-                    message.content = "gk!"+message.content[4:]
-            except:
-                traceback.print_exc()
-                sys.exit()
-            await bot.process_commands(message)
-        else:
-            return
+        try:
+            if message.content.lower().startswith("gk! "):
+                message.content = "gk!"+message.content[4:]
+        except:
+            traceback.print_exc()
+            sys.exit()
+        await bot.process_commands(message)
     except AttributeError:
-        return
+        traceback.print_exc()
     except:
         traceback.print_exc()
 
 
 # full admin only commands
 @bot.command()
+@commands.has_permissions(manage_channels=True)
 async def die(ctx):
     """will shut down the bot, don't do that (full only)"""
     if ctx.author.guild_permissions.manage_channels:
@@ -86,6 +95,7 @@ async def die(ctx):
     
     
 @bot.command()
+@commands.has_permissions(manage_channels=True)
 async def restart(ctx):
     if ctx.author.guild_permissions.manage_channels:
         await ctx.send("Restarting")
@@ -96,6 +106,7 @@ async def restart(ctx):
         
         
 @bot.command()
+@commands.has_permissions(manage_channels=True)
 async def messagemin(ctx, m_min):
     try:
         bot.settings["num_messages"] = int(m_min)
@@ -110,6 +121,7 @@ async def messagemin(ctx, m_min):
 
 # trial admin+ commands
 @bot.command()
+@commands.has_permissions(manage_messages=True)
 async def warn(ctx, *, args:str):
     users = get_users(ctx.message, args)
     message = ctx.message
@@ -136,6 +148,7 @@ async def warn(ctx, *, args:str):
             
             
 @bot.command()
+@commands.has_permissions(manage_messages=True)
 async def mute(ctx, *, args:str):
     users = get_users(ctx.message, args)
     message = ctx.message
@@ -162,6 +175,7 @@ async def mute(ctx, *, args:str):
             
             
 @bot.command()
+@commands.has_permissions(manage_messages=True)
 async def thaw(ctx, *args):
     """Unfreezes a user"""
     users = get_users(ctx.message, *args)
@@ -181,6 +195,7 @@ async def thaw(ctx, *args):
         
         
 @bot.command()
+@commands.has_permissions(manage_messages=True)
 async def freeze(ctx, *args):
     roles = ["chirper", "chirper2", "chirper3", "chirper4"]
     users = get_users(ctx.message, *args)
@@ -198,6 +213,7 @@ async def freeze(ctx, *args):
 
         
 @bot.command()
+@commands.has_permissions(manage_messages=True)
 async def customs(ctx, *args):
     roles = ["chirper","chirper2","chirper3","chirper4"]
     users = get_users(ctx.message, *args)
@@ -211,6 +227,7 @@ async def customs(ctx, *args):
 
 
 @bot.command()
+@commands.has_permissions(manage_messages=True)
 async def passport(ctx, *args):
     users = get_users(ctx.message, *args)
     for user in users:
@@ -220,6 +237,7 @@ async def passport(ctx, *args):
         await ctx.send(msg)
 
 @bot.command(name="voters")
+@commands.has_permissions(manage_messages=True)
 async def _voters(ctx, *args):
     try:
         voters = int(re.search('[0-9]+', join_args(
@@ -237,16 +255,19 @@ async def _voters(ctx, *args):
 
 
 @bot.command(name="leaderboard")
+@commands.has_permissions(manage_messages=True)
 async def _leader_board(ctx, *args):
     await lead_brd(ctx, "LEADERBOARD", "posters", "Messages", *args)
 
 
 @bot.command(name="mayoboard")
+@commands.has_permissions(manage_messages=True)
 async def _mayo_board(ctx, *args):
     await lead_brd(ctx, "MAYOBOARD", "mayoers", "Mayos", *args)
 
 
 @bot.command(name="modlogs")
+@commands.has_permissions(manage_messages=True)
 async def _mod_logs(ctx, *args):
     users = get_users(ctx.message, *args)
     for user in users:
@@ -257,6 +278,7 @@ async def _mod_logs(ctx, *args):
         
 
 @bot.command(name="modscoreboard")
+@commands.has_permissions(manage_messages=True)
 async def _mod_score_board(ctx, *args):
     await lead_brd(ctx, "MOD_SCOREBOARD", "punishers",
         "Punishments", *args, count_display=False)
@@ -278,6 +300,8 @@ async def _change_temperature(ctx, user, temperature):
 
 
 @bot.command(name="warm")
+#@commands.check(commands.has_permissions(manage_messages=True))
+@commands.check(can_warm)
 async def _warm(ctx, *args):
     """warm a user and then add task to remove warm role"""
     users = get_users(ctx.message, *args)
@@ -295,6 +319,7 @@ async def _warm(ctx, *args):
             user, bot.fun_roles["warm"]))
             
 @bot.command(name="cool")
+@commands.check(can_cool)
 async def _cool(ctx, *args):
     """cool a user and then add task to remove cool role"""
     users = get_users(ctx.message, *args)
@@ -313,6 +338,7 @@ async def _cool(ctx, *args):
 
 
 @commands.command(name="help")
+@commands.has_permissions(manage_messages=True)
 async def _custom_help(ctx, *args):
     help = '\n'.join([
     ("`gk! die` will shut down the bot, don't do that (full only)"),
