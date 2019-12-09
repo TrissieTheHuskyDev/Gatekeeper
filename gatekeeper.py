@@ -1,10 +1,10 @@
+#!/usr/env/bin python3
 # Valley Discord Chat Bot
-# python3
-# imports and helper functions contained within __init__
 
 import os
 import sys
 try:
+    import __init__
     from __init__ import *
 except:
     print("__init__.py is missing or corrupt, please download a new version")
@@ -21,7 +21,7 @@ except:
 async def lead_brd(ctx, sql_key, board_header, count_str, *args, 
     count=10, count_display=True):
     try:
-        count = int(re.search("\d+", join_args(args).result).group())
+        count = int(re.search("\d+", ' '.join(*args)).group())
     except:
         pass
     try:
@@ -93,30 +93,33 @@ async def on_member_join(member):
 
 
 # full admin only commands
-@bot.command()
+'''@bot.command()
 @commands.has_permissions(manage_channels=True)
 async def die(ctx):
     """will shut down the bot, don't do that (full only)"""
-    if ctx.author.guild_permissions.manage_channels:
-        await ctx.send("Quitting")
-        await bot.logout()
-        await bot.http.close()
-        bot.loop.close()
-        exit_bot()
-    else:
-        await ctx.send("You don't have access to this command")
+    await ctx.send("Quitting")
+    await bot.logout()
+    await bot.http.close()
+    await bot.user.close()
+    exit_bot()'''
+
+@bot.command()
+@commands.has_permissions(manage_channels=True)
+async def die(ctx):
+    await ctx.send("Quitting")
+    await exit_bot()
+
     
     
 @bot.command()
 @commands.has_permissions(manage_channels=True)
 async def restart(ctx):
-    if ctx.author.guild_permissions.manage_channels:
-        await ctx.send("Restarting")
-        await bot.http.close()
-        restart_bot()
-    else:
-        await ctx.send("You don't have access to this command")
-        
+    await ctx.send("Restarting")
+    try:
+        await restart_bot()
+    except:
+        traceback.print_exc()
+        sys.exit()
         
 @bot.command()
 @commands.has_permissions(manage_channels=True)
@@ -253,7 +256,7 @@ async def passport(ctx, *args):
 @commands.has_permissions(manage_messages=True)
 async def _voters(ctx, *args):
     try:
-        voters = int(re.search('[0-9]+', join_args(
+        voters = int(re.search('[0-9]+', ' '.join(
             args).result).group())
     except:
         voters = 5
@@ -414,12 +417,9 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
 
 
 # program initialization includes:
-#   logger setup - logger for bot for easy logging of info and the 
-#       ability to turn debugging on or off
 #   main() - Loads settings, sets up database connection, and 
 #       initializes bot connection
-logger = logging.getLogger('information')
-    
+
 
 
 if __name__ == "__main__":
@@ -429,4 +429,3 @@ if __name__ == "__main__":
     except:
         traceback.print_exc()
         sys.exit()
-

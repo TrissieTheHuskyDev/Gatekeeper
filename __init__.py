@@ -1,39 +1,27 @@
 #!/usr/env/bin python3
 
 #stdlib imports
+import aiohttp
 import argparse
 import asyncio
-from collections import OrderedDict
-from datetime import datetime, timedelta
 import inspect
-import logging
 import os
 import pickle
 import random
 import re
 import sqlite3
-from sqlite3 import Error, IntegrityError
 import sys
+import subprocess
 import traceback
 
-# check predications
-def can_warm(ctx):
-    return ((bot.fun_roles["warm"] in ctx.message.author.roles or
-        bot.fun_roles["burning"] in ctx.message.author.roles) or
-        ctx.channel.permissions_for(ctx.author).manage_messages)
-        
-def can_cool(ctx):
-    return (bot.fun_roles["cold"] in ctx.message.author.roles or
-        bot.fun_roles["permafrost"] in ctx.message.author.roles or
-        ctx.channel.permissions_for(ctx.author).manage_messages)
+from collections import OrderedDict
+from datetime import datetime, timedelta
+from sqlite3 import connect, Error, IntegrityError
 
-# discord.py imports
+
 import discord
-
 from discord import Client
 from discord.ext import commands
-
-
 
 # custom imports
 try:
@@ -50,12 +38,24 @@ except:
     sys.exit()
 
 
+# check predications
+def can_warm(ctx):
+    return ((bot.fun_roles["warm"] in ctx.message.author.roles or
+        bot.fun_roles["burning"] in ctx.message.author.roles) or
+        ctx.channel.permissions_for(ctx.author).manage_messages)
+        
+def can_cool(ctx):
+    return (bot.fun_roles["cold"] in ctx.message.author.roles or
+        bot.fun_roles["permafrost"] in ctx.message.author.roles or
+        ctx.channel.permissions_for(ctx.author).manage_messages)
+
+
 # SQL functions
 def create_db_connection(db_file):
     """Creates a SQL connection to the db_file"""
     connection = None
     try:
-        connection = sqlite3.connect(db_file, timeout=3)
+        connection = connect(db_file, timeout=3)
         return connection
     except Error as err:
         print("Error establishing connection to the database\n"
@@ -177,29 +177,38 @@ def exec_sql(sql_string, values):
         return cur
 
 
-def exit_bot():
+async def exit_bot():
     """Helper to exit bot and then exit system"""
-    '''loop = asyncio.get_event_loop()
-    loop.create_task(bot.http.close())
-    loop.create_task(bot.logout())'''
-    
-    os.system(r".\bin\kill.bat {}".format(os.getpid()))
+    try:
+        await aiosession.close()
+    except:
+        pass
+    await bot.logout()
+    sys.exit()
 
-
-def restart_bot():
+async def restart_bot():
     """restarts bot"""
-    print("\n\n")
     frame = inspect.stack()[1].frame
+    file_name = frame.f_code.co_filename # get name of main file
+    try:
+        await aiosession.close()
+    except:
+        pass
+    os.execl(sys.executable, sys.executable, * sys.argv)
+    """ # print("\n\n")
+    global restart
+    restart = True """
+    """ frame = inspect.stack()[1].frame
     file_name = frame.f_code.co_filename
     os.system(r".\bin\restart.bat "
-        +"{} {} {}".format(os.getpid(), sys.executable, file_name))
+        +"{} {} {}".format(os.getpid(), sys.executable, file_name)) """
 
 
 # bot initialization
 bot = commands.Bot(command_prefix=("gk!", "!"), case_insensitive=True,
     description="A bot for basic commands", self_bot=False,
     help_command=None)
-
+aiosession = aiohttp.ClientSession(loop=bot.loop)
 
 # command line argument handler
 def _args(description="Gatekeeper command line arguments"):
@@ -222,9 +231,7 @@ def start(secret_file=r".\secret"):
     test_mode = cli_args.test_mode
     reset = cli_args.reset
     
-    
     # setup settings and check settings_integrity
-    
     settings_manager = Program_Settings(reset=reset, test_mode=test_mode)
     settings_manager.settings_integrity(test_mode=test_mode)
     settings = settings_manager.settings
@@ -254,4 +261,4 @@ def start(secret_file=r".\secret"):
     # start bot
     print("Logging in...")
     bot.run(TOKEN)
-    
+    print("bot exited")
