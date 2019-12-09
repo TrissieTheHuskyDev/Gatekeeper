@@ -58,58 +58,15 @@ SQL_STRINGS = {
     
     "IS_FROZEN": "SELECT frozen FROM roles WHERE id = ?;",
     
-    "REPORTS":{
-        "MONTH": [
-            "SELECT COUNT(*) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-30 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-30 days')"
-        ],
-
-        "FILTERWEEK": [
-            "SELECT COUNT(*) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-7 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-7 days')"
-        ],
-        
-        "ALLWEEK": [
-            "SELECT COUNT(*) FROM messages WHERE created_at >= datetime('now', '-7 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE created_at >= datetime('now', '-7 days')"
-        ],
-        
-        "CATWEEK": [
-            "SELECT COUNT(*) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-7 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-7 days')"
-        ],
-        
-        "FILTERDAY": [
-            "SELECT COUNT(*) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-1 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-1 days')"
-        ],
-        
-        "ALLDAY": [
-            "SELECT COUNT(*) FROM messages WHERE created_at >= datetime('now', '-1 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE created_at >= datetime('now', '-1 days')"
-        ],
-        
-        "CATDAY": [
-            "SELECT COUNT(*) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-1 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-1 days')"
-        ],
-        
-        "WEEK": [
-            "SELECT COUNT(*) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-7 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-7 days')"
-        ],
-
-        "ALL": [
-            "SELECT COUNT(*) FROM messages WHERE channelid =?",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE channelid =?"
-        ],
-        
-        "DAY": [
-            "SELECT COUNT(*) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-1 days')",
-            "SELECT COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-1 days')"
-        ]
-    },
+    "WEEK": "SELECT COUNT(*), COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-7 days')",
     
-
-
+    "ALLWEEK": "SELECT COUNT(*), COUNT(DISTINCT author) FROM messages WHERE created_at >= datetime('now', '-7 days')",
+    
+    "DAY": "SELECT COUNT(*), COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-1 days')",
+    
+    "ALLDAY": "SELECT COUNT(*), COUNT(DISTINCT author) FROM messages WHERE created_at >= datetime('now', '-1 days')",
+    
+    "MONTH": "SELECT COUNT(*), COUNT(DISTINCT author) FROM messages WHERE channelid =? AND created_at >= datetime('now', '-30 days')",
+    
+    "ALL": "SELECT COUNT(*), COUNT(DISTINCT author) FROM messages WHERE channelid =?",
 }
