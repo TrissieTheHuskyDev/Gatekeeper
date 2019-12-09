@@ -127,7 +127,7 @@ async def messagemin(ctx, m_min):
         
         msg = ("Minimum message count for linking set to: {m_min}.".
             format(m_min=m_min))
-    except ValueError as exc:
+    except ValueError:
         msg = ("Invalid Integer entered for messagemin command")
     await ctx.send(msg)
     
@@ -409,7 +409,7 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
         bot.remove_command("help")
         bot.add_command(_custom_help)
         bot.add_cog(reporting(bot, SQL))
-    except Exception as exc:
+    except:
         traceback.print_exc()
 
 
