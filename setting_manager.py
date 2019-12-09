@@ -86,8 +86,8 @@ class Program_Settings:
         settings = {
             "setting_version": "v0.1.4",
             "db_file": r"creepydb",
-            "secret_file": ".\\secret",
-            "settings_file": ".\\settings",
+            "secret_file": "secret",
+            "settings_file": "settings",
             # settings used and saved to bot memory. These are absolutely vital to the bot's operation, don't change them unless needed.
             "bot_settings":{
                 "num_messages": 5,
@@ -156,15 +156,15 @@ class Program_Settings:
 
     def set_settings(self, settings):
         """function to update the settings file and instance settings"""
-        settings_file = settings.get("settings_file", ".\\settings")
+        settings_file = settings.get("settings_file", "settings")
         with open(settings_file, "wb") as fd:
             self.settings = pickle.dump(settings, fd)
         self.load_settings()
             
     def load_settings(self):
         if self.settings:
-            settings_file = self.settings.get("settings_file", ".\\settings")
+            settings_file = self.settings.get("settings_file", "settings")
         else:
-            settings_file = ".\\settings"
+            settings_file = "settings"
         with open(settings_file, "rb") as fd:
             self.settings = pickle.load(fd)
