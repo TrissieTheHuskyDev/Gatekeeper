@@ -10,7 +10,7 @@ except:
     print("__init__.py is missing or corrupt, please download a new version")
     sys.exit()
 try:
-    from report import *
+    from Cogs.report import reporting
 except:
     print("report is missing or corrupt, download a new version to "
         + "enable report commands including leaderboard")
@@ -408,6 +408,7 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
         
         bot.remove_command("help")
         bot.add_command(_custom_help)
+        bot.add_cog(reporting(bot, SQL))
     except Exception as exc:
         traceback.print_exc()
 
