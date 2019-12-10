@@ -4,6 +4,8 @@
 from collections import OrderedDict
 import json, os, pickle, sys
 
+from discord.ext import commands
+
 
 class Secrets:
     """class to hold and edit secret file"""
@@ -74,20 +76,25 @@ class Program_Settings:
    
     def __init__(self, reset=False, test_mode=False):
         """opens settings file if exists, creates otherwise"""
-        if (not os.path.exists("settings")) or (reset):
-            self.settings = self.default_settings(test_mode=test_mode)
+        self.reset = reset
+        self.test_mode = test_mode
+        if (not os.path.exists("settings")) or (self.reset == True):
+            self.settings = self.default_settings()
             self.set_settings(self.settings)
         else:
             self.load_settings()
             
             
-    def default_settings(self, settings_file="settings", test_mode=False):
+    def default_settings(self, settings_file="settings"):
         """reset settings to default values"""
+        test_mode = self.test_mode
         settings = {
-            "setting_version": "v0.1.4",
-            "db_file": r"creepydb",
-            "secret_file": "secret",
+            "setting_version": "v0.1.5",
+            "db_file": "creepydb",
+            "secret_file": "secret.json",
             "settings_file": "settings",
+            "test_mode":self.test_mode,
+            "reset":self.reset,
             # settings used and saved to bot memory. These are absolutely vital to the bot's operation, don't change them unless needed.
             "bot_settings":{
                 "num_messages": 5,
@@ -100,6 +107,13 @@ class Program_Settings:
                     "www.youtube.com"
                     ],
                 "temp_decay": 900,
+                "ignore_errors": (
+                    commands.errors.MissingPermissions,
+                    commands.CheckFailure,
+                    commands.CommandNotFound,
+                    commands.MissingRole,
+                    commands.NoPrivateMessage
+                ),
                 "roles": OrderedDict(
                    [["chirper"  , (539929792938770436 if 
                         not test_mode else 651519729961271309)],
@@ -140,30 +154,37 @@ class Program_Settings:
         }
         return settings
         
-    def settings_integrity(self, test_mode=False):
+    def settings_integrity(self):
         """check settings to ensure they contain default settings"""
-        default_settings = self.default_settings(test_mode=test_mode)
+        default_settings = self.default_settings()
+        self.load_settings()
         setting_version = self.settings.get(
             "setting_version", None)
-        if setting_version != default_settings["setting_version"]:
+        if (setting_version != default_settings["setting_version"]):
             answer = input("Settings mismatch detected, do you want to\n"
-                + " reset to default (Y/N): ").lower()
+                + " obtain missing default values (Y/N): ").lower()
             if answer.startswith("n"):
                 print("Attempting to continue, errors may occur with\n"
                     +" certain commands or at unexpected times")
                 return
+            for setting_key, setting_val in self.settings.items():
+                if setting_key != "setting_version":
+                    default_settings[setting_key] = setting_val
             self.set_settings(default_settings)
 
     def set_settings(self, settings):
         """function to update the settings file and instance settings"""
-        settings_file = settings.get("settings_file", "settings")
+        settings_file = settings.get(
+            "settings_file", "settings")
+        self.settings = settings
         with open(settings_file, "wb") as fd:
-            self.settings = pickle.dump(settings, fd)
+            pickle.dump(settings, fd)
         self.load_settings()
             
     def load_settings(self):
         if self.settings:
-            settings_file = self.settings.get("settings_file", "settings")
+            settings_file = self.settings.get(
+                "settings_file", "settings")
         else:
             settings_file = "settings"
         with open(settings_file, "rb") as fd:

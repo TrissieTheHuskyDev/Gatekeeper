@@ -4,6 +4,8 @@ Reference
 testing
 
 # ignore these files
-secret
 creepydb
+secret.json
+settings.json
+secret
 settings
