@@ -46,14 +46,7 @@ async def lead_brd(ctx, sql_key, board_header, count_str, *args,
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.errors.MissingPermissions):
-        return
-    elif isinstance(error, commands.MissingRole):
-        return
-    elif isinstance(error, commands.NoPrivateMessage):
-        return
-    else:
-        print(error)
+    await handle_errors(ctx, error)
 
 # message/command handler
 @bot.event

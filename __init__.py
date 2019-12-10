@@ -114,6 +114,8 @@ async def temp_decay(user, role):
     await asyncio.sleep(bot.settings["temp_decay"])
     await user.remove_roles(role)
     
+
+
 # misc helpers
 async def can_post(message):
     """check if user can post links based on numbed of posts made"""
@@ -127,8 +129,7 @@ async def can_post(message):
         embd = discord.Embed(title=message.channel.name, color=0x00ff00)
         embd.add_field(name="Content", value=message.content, inline=False)
         await bot.logs.send(embed=embd)
-        await message.delete()
-        
+        await message.delete()    
 
 def check_whitelist(message):
     """check message against site whitelist"""
@@ -195,13 +196,19 @@ async def restart_bot():
     except:
         pass
     os.execl(sys.executable, sys.executable, * sys.argv)
-    """ # print("\n\n")
-    global restart
-    restart = True """
-    """ frame = inspect.stack()[1].frame
-    file_name = frame.f_code.co_filename
-    os.system(r".\bin\restart.bat "
-        +"{} {} {}".format(os.getpid(), sys.executable, file_name)) """
+
+# error handler
+async def handle_errors(ctx, error):
+    """Class to handle command errors"""
+    ignore_exceptions = bot.settings.get("ignore_errors", False)
+    if ignore_exceptions == False:
+        print(error)
+        return
+    for exc in ignore_exceptions:
+        if isinstance(error, exc):
+            return
+    print(error)
+    return
 
 
 # bot initialization
@@ -233,7 +240,7 @@ def start(secret_file=r".\secret"):
     
     # setup settings and check settings_integrity
     settings_manager = Program_Settings(reset=reset, test_mode=test_mode)
-    settings_manager.settings_integrity(test_mode=test_mode)
+    settings_manager.settings_integrity()
     settings = settings_manager.settings
     
     # setup and process secret

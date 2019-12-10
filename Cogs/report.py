@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 from sql_constants import SQL_STRINGS
-from __init__ import exec_sql
+from __init__ import exec_sql, handle_errors
 
 class reporting(commands.Cog):
     reports = []
@@ -13,6 +13,13 @@ class reporting(commands.Cog):
         self.execute = exec_sql
         self.SQL = SQL_STRINGS
 
+    async def cog_check(self, ctx):
+        return ctx.channel.permissions_for(
+            ctx.author).manage_messages
+
+    async def cog_command_error(self, ctx, error):
+        await handle_errors(ctx, error)
+        
     def form_report(self, sql_key, channel=""):
         results = self.execute(self.SQL[sql_key], ((channel.id,)
             if channel else ())).fetchone()
