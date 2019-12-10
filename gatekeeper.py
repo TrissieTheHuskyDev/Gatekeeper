@@ -1,6 +1,5 @@
 #!/usr/env/bin python3
 # Valley Discord Chat Bot
-
 import os
 import sys
 try:
@@ -10,43 +9,19 @@ except:
     print("__init__.py is missing or corrupt, please download a new version")
     sys.exit()
 try:
-    from Cogs.report import reporting
+    from Cogs.report import Report
+    from Cogs.boards import Board
 except:
-    print("report is missing or corrupt, download a new version to "
-        + "enable report commands including leaderboard")
+    print("a cog is missing or corrupt, download a new version to "
+        + "enable full functionality.")
     traceback.print_exc()
 
 
 # command helpers
-async def lead_brd(ctx, sql_key, board_header, count_str, *args, 
-    count=10, count_display=True):
-    try:
-        count = int(re.search("\d+", ' '.join(*args)).group())
-    except:
-        pass
-    try:
-        sql_results = exec_sql(SQL[sql_key], (
-            bot.user.id, bot.guild.id, count)).fetchall()
-    except:
-        sql_results = exec_sql(SQL[sql_key], ()).fetchall()
-    count = min(len(sql_results), count)
-    row_no = 1
-    if count_display:
-        msg = "Top {} {}:\n".format(count, board_header)
-    else:
-        msg = "Top {}\n".format(board_header)
-    for row in sql_results:
-        user = bot.get_user(row[0])
-        if user is not None and not user.bot:
-            msg += "{}. {}#{} : {} {}\n".format(
-                row_no, user.name, user.discriminator, row[1],
-                count_str)
-            row_no += 1
-    await ctx.send(msg)
-
 @bot.event
 async def on_command_error(ctx, error):
     await handle_errors(ctx, error)
+
 
 # message/command handler
 @bot.event
@@ -69,7 +44,8 @@ async def on_message(message):
         traceback.print_exc()
     except:
         traceback.print_exc()
-        
+
+
 @bot.event
 async def on_member_join(member):
     delta = datetime.utcnow() - member.created_at
@@ -86,24 +62,13 @@ async def on_member_join(member):
 
 
 # full admin only commands
-'''@bot.command()
-@commands.has_permissions(manage_channels=True)
-async def die(ctx):
-    """will shut down the bot, don't do that (full only)"""
-    await ctx.send("Quitting")
-    await bot.logout()
-    await bot.http.close()
-    await bot.user.close()
-    exit_bot()'''
-
 @bot.command()
 @commands.has_permissions(manage_channels=True)
 async def die(ctx):
     await ctx.send("Quitting")
     await exit_bot()
 
-    
-    
+
 @bot.command()
 @commands.has_permissions(manage_channels=True)
 async def restart(ctx):
@@ -113,7 +78,8 @@ async def restart(ctx):
     except:
         traceback.print_exc()
         sys.exit()
-        
+
+
 @bot.command()
 @commands.has_permissions(manage_channels=True)
 async def messagemin(ctx, m_min):
@@ -126,7 +92,7 @@ async def messagemin(ctx, m_min):
     except ValueError:
         msg = ("Invalid Integer entered for messagemin command")
     await ctx.send(msg)
-    
+
 
 # trial admin+ commands
 @bot.command()
@@ -154,8 +120,8 @@ async def warn(ctx, *, args:str):
             msg = "{user} has {mod_logs} modlog(s)".format(
                 user=user.mention, mod_logs=mod_logs)
             await ctx.send(msg)
-            
-            
+
+
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def mute(ctx, *, args:str):
@@ -181,8 +147,8 @@ async def mute(ctx, *, args:str):
             msg = "{user} has {mod_logs} modlog(s)".format(
                 user=user.mention, mod_logs=mod_logs)
             await ctx.send(msg)
-            
-            
+
+
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def thaw(ctx, *args):
@@ -201,8 +167,8 @@ async def thaw(ctx, *args):
             user_mention=user.mention)
         user_roles = store_roles(user, 0)
         await ctx.send(msg)
-        
-        
+
+
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def freeze(ctx, *args):
@@ -220,7 +186,7 @@ async def freeze(ctx, *args):
                 user_mention=user.mention)
         await ctx.send(msg)
 
-        
+
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def customs(ctx, *args):
@@ -245,6 +211,7 @@ async def passport(ctx, *args):
             user_mention=user.mention)
         await ctx.send(msg)
 
+
 @bot.command(name="voters")
 @commands.has_permissions(manage_messages=True)
 async def _voters(ctx, *args):
@@ -263,18 +230,6 @@ async def _voters(ctx, *args):
         await ctx.send(msg)
 
 
-@bot.command(name="leaderboard")
-@commands.has_permissions(manage_messages=True)
-async def _leader_board(ctx, *args):
-    await lead_brd(ctx, "LEADERBOARD", "posters", "Messages", *args)
-
-
-@bot.command(name="mayoboard")
-@commands.has_permissions(manage_messages=True)
-async def _mayo_board(ctx, *args):
-    await lead_brd(ctx, "MAYOBOARD", "mayoers", "Mayos", *args)
-
-
 @bot.command(name="modlogs")
 @commands.has_permissions(manage_messages=True)
 async def _mod_logs(ctx, *args):
@@ -285,13 +240,6 @@ async def _mod_logs(ctx, *args):
         msg = "{} has {} modlog(s)".format(user.mention, log_count)
         await bot.logs.send(msg)
         
-
-@bot.command(name="modscoreboard")
-@commands.has_permissions(manage_messages=True)
-async def _mod_score_board(ctx, *args):
-    await lead_brd(ctx, "MOD_SCOREBOARD", "punishers",
-        "Punishments", *args, count_display=False)
-
 
 async def _change_temperature(ctx, user, temperature):
     """warms/cools user(s) specified"""
@@ -309,7 +257,6 @@ async def _change_temperature(ctx, user, temperature):
 
 
 @bot.command(name="warm")
-#@commands.check(commands.has_permissions(manage_messages=True))
 @commands.check(can_warm)
 async def _warm(ctx, *args):
     """warm a user and then add task to remove warm role"""
@@ -404,7 +351,8 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
         
         bot.remove_command("help")
         bot.add_command(_custom_help)
-        bot.add_cog(reporting(bot, SQL))
+        bot.add_cog(Report(bot, SQL, exec_sql))
+        bot.add_cog(Board(bot, SQL, exec_sql))
     except:
         traceback.print_exc()
 
