@@ -1,17 +1,14 @@
 from discord.ext import commands
 import discord
-from sql_constants import SQL_STRINGS
 from __init__ import exec_sql, handle_errors
 
-class reporting(commands.Cog):
+class Report(commands.Cog):
     reports = []
 
-    def __init__(self, bot, sql):
+    def __init__(self, bot, sql, exec_sql):
         self.bot = bot
-        global SQL_STRINGS
-        global exec_sql
+        self.SQL = sql
         self.execute = exec_sql
-        self.SQL = SQL_STRINGS
 
     async def cog_check(self, ctx):
         return ctx.channel.permissions_for(

@@ -33,7 +33,7 @@ class Secrets:
                 sys.exit()
         else:
             self.load_secret()
-    
+
     def load_secret(self):
         try:
             with open(self.secret_file,"r") as fd:
@@ -41,7 +41,7 @@ class Secrets:
         except EOFError:
             print("Token missing or corrupt")
             self.set_secret()
-                 
+
     def set_secret(self):
         from __init__ import bot
         help_msg = """
@@ -73,7 +73,7 @@ https://discordpy.readthedocs.io/en/latest/discord.html"""
 class Program_Settings:
     """class to handle loading, adding, and updating settings"""
     settings = {}
-   
+
     def __init__(self, reset=False, test_mode=False):
         """opens settings file if exists, creates otherwise"""
         self.reset = reset
@@ -83,8 +83,8 @@ class Program_Settings:
             self.set_settings(self.settings)
         else:
             self.load_settings()
-            
-            
+
+
     def default_settings(self, settings_file="settings"):
         """reset settings to default values"""
         test_mode = self.test_mode
@@ -95,7 +95,9 @@ class Program_Settings:
             "settings_file": "settings",
             "test_mode":self.test_mode,
             "reset":self.reset,
-            # settings used and saved to bot memory. These are absolutely vital to the bot's operation, don't change them unless needed.
+            # settings used and saved to bot memory. 
+            # These are absolutely vital to the bot's operation, 
+            # don't change them unless needed.
             "bot_settings":{
                 "num_messages": 5,
                 "gaius": 356878329602768897,
@@ -153,7 +155,7 @@ class Program_Settings:
             }
         }
         return settings
-        
+
     def settings_integrity(self):
         """check settings to ensure they contain default settings"""
         default_settings = self.default_settings()
@@ -180,7 +182,7 @@ class Program_Settings:
         with open(settings_file, "wb") as fd:
             pickle.dump(settings, fd)
         self.load_settings()
-            
+
     def load_settings(self):
         if self.settings:
             settings_file = self.settings.get(

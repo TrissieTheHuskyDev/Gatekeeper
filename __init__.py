@@ -43,7 +43,8 @@ def can_warm(ctx):
     return ((bot.fun_roles["warm"] in ctx.message.author.roles or
         bot.fun_roles["burning"] in ctx.message.author.roles) or
         ctx.channel.permissions_for(ctx.author).manage_messages)
-        
+
+
 def can_cool(ctx):
     return (bot.fun_roles["cold"] in ctx.message.author.roles or
         bot.fun_roles["permafrost"] in ctx.message.author.roles or
@@ -108,12 +109,12 @@ async def add_roles(user, roles):
 async def manage_roles(user, roles):
     await add_roles(user,roles[0])
     await remove_roles(user,roles[1])
-    
+
+
 async def temp_decay(user, role):
     await user.add_roles(role)
     await asyncio.sleep(bot.settings["temp_decay"])
     await user.remove_roles(role)
-    
 
 
 # misc helpers
@@ -130,6 +131,7 @@ async def can_post(message):
         embd.add_field(name="Content", value=message.content, inline=False)
         await bot.logs.send(embed=embd)
         await message.delete()    
+
 
 def check_whitelist(message):
     """check message against site whitelist"""
@@ -187,6 +189,7 @@ async def exit_bot():
     await bot.logout()
     sys.exit()
 
+
 async def restart_bot():
     """restarts bot"""
     frame = inspect.stack()[1].frame
@@ -196,6 +199,7 @@ async def restart_bot():
     except:
         pass
     os.execl(sys.executable, sys.executable, * sys.argv)
+
 
 # error handler
 async def handle_errors(ctx, error):
@@ -208,6 +212,8 @@ async def handle_errors(ctx, error):
         if isinstance(error, exc):
             return
     print(error)
+    if ctx.bot.verbose == True:
+        traceback.print_exc()
     return
 
 
@@ -217,6 +223,7 @@ bot = commands.Bot(command_prefix=("gk!", "!"), case_insensitive=True,
     help_command=None)
 aiosession = aiohttp.ClientSession(loop=bot.loop)
 
+
 # command line argument handler
 def _args(description="Gatekeeper command line arguments"):
     """Parse command line arguments"""
@@ -224,6 +231,7 @@ def _args(description="Gatekeeper command line arguments"):
     parser = argparse.ArgumentParser(description=description, usage=usage)
     parser.add_argument('-t', '--test_mode', action='store_true')
     parser.add_argument('-r', '--reset', action='store_true')
+    parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -237,17 +245,20 @@ def start(secret_file=r".\secret"):
     cli_args = _args()
     test_mode = cli_args.test_mode
     reset = cli_args.reset
-    
+    verbosity = cli_args.verbose
+
     # setup settings and check settings_integrity
-    settings_manager = Program_Settings(reset=reset, test_mode=test_mode)
+    settings_manager = Program_Settings(
+        reset=reset, test_mode=test_mode)
     settings_manager.settings_integrity()
     settings = settings_manager.settings
-    
+
     # setup and process secret
     secrets = Secrets(settings["secret_file"])
     bot.TIME = secrets.secret["time"]
+    bot.verbose = verbosity
     TOKEN = secrets.secret["token"]
-    
+
     # setup sql database and make sure that required tables are added
     conn = create_db_connection(settings["db_file"])
     if conn is not None:
@@ -259,12 +270,12 @@ def start(secret_file=r".\secret"):
             raise Exception("No connection to Database")
         except Exception as exc:
             traceback.print_exc()
-    
+
     # setup local bot memory
     bot.conn = conn
     bot.settings = settings["bot_settings"]
     bot.settings_manager = settings_manager
-    
+
     # start bot
     print("Logging in...")
     bot.run(TOKEN)
