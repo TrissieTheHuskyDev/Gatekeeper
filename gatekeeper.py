@@ -11,6 +11,7 @@ except:
 try:
     from Cogs.report import Report
     from Cogs.boards import Board
+    from Cogs.temperature import Temperature
 except:
     print("a cog is missing or corrupt, download a new version to "
         + "enable full functionality.")
@@ -239,58 +240,6 @@ async def _mod_logs(ctx, *args):
             SQL["MOD_LOGS"], (user.id,)).fetchone()[1]
         msg = "{} has {} modlog(s)".format(user.mention, log_count)
         await bot.logs.send(msg)
-        
-
-async def _change_temperature(ctx, user, temperature):
-    """warms/cools user(s) specified"""
-
-    if bot.fun_roles["heatproof"] in user.roles:
-        passed = False
-        msg = "I can't {} {} they're wearing thermal undies.".format(
-            temperature, user.mention,)
-    else:
-        passed = True
-        msg = "Ok, {} {}".format(user.mention, random.choice(
-            bot.settings[temperature+"_responses"]))
-    await ctx.send(msg)
-    return passed
-
-
-@bot.command(name="warm")
-@commands.check(can_warm)
-async def _warm(ctx, *args):
-    """warm a user and then add task to remove warm role"""
-    users = get_users(ctx.message, *args)
-    for user in users:
-        if (bot.fun_roles["permafrost"] in user.roles):
-            msg = "I can't warm {} they're permafrozen".format(
-                user.mention)
-            await ctx.send(msg)
-            return
-        if not await _change_temperature(ctx, user, "warm"):
-            return
-        # add role to user and start timer, remove role after timer
-        #   expires.
-        warmin = asyncio.create_task(temp_decay(
-            user, bot.fun_roles["warm"]))
-            
-@bot.command(name="cool")
-@commands.check(can_cool)
-async def _cool(ctx, *args):
-    """cool a user and then add task to remove cool role"""
-    users = get_users(ctx.message, *args)
-    for user in users:
-        if (bot.fun_roles["burning"] in user.roles):
-            msg = "I can't cool {} they're burning".format(
-                user.mention)
-            await ctx.send(msg)
-            return
-        if not await _change_temperature(ctx, user, "cool"):
-            return
-        coolin = asyncio.create_task(temp_decay(
-            user, bot.fun_roles["cold"]))
-
-        
 
 
 @commands.command(name="help")
@@ -329,7 +278,6 @@ async def _custom_help(ctx, *args):
     await ctx.send(help)
 
 
-
 @bot.event
 async def on_ready(ready_msg="Logged in as {name} ({id})",
     send_message=False):
@@ -353,14 +301,9 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
         bot.add_command(_custom_help)
         bot.add_cog(Report(bot, SQL, exec_sql))
         bot.add_cog(Board(bot, SQL, exec_sql))
+        bot.add_cog(Temperature(bot))
     except:
         traceback.print_exc()
-
-
-# program initialization includes:
-#   main() - Loads settings, sets up database connection, and 
-#       initializes bot connection
-
 
 
 if __name__ == "__main__":
