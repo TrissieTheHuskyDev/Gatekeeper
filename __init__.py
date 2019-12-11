@@ -38,19 +38,6 @@ except:
     sys.exit()
 
 
-# check predications
-def can_warm(ctx):
-    return ((bot.fun_roles["warm"] in ctx.message.author.roles or
-        bot.fun_roles["burning"] in ctx.message.author.roles) or
-        ctx.channel.permissions_for(ctx.author).manage_messages)
-
-
-def can_cool(ctx):
-    return (bot.fun_roles["cold"] in ctx.message.author.roles or
-        bot.fun_roles["permafrost"] in ctx.message.author.roles or
-        ctx.channel.permissions_for(ctx.author).manage_messages)
-
-
 # SQL functions
 def create_db_connection(db_file):
     """Creates a SQL connection to the db_file"""
@@ -109,12 +96,6 @@ async def add_roles(user, roles):
 async def manage_roles(user, roles):
     await add_roles(user,roles[0])
     await remove_roles(user,roles[1])
-
-
-async def temp_decay(user, role):
-    await user.add_roles(role)
-    await asyncio.sleep(bot.settings["temp_decay"])
-    await user.remove_roles(role)
 
 
 # misc helpers
