@@ -2,6 +2,7 @@ import aiohttp
 import inspect
 import os
 import csv
+import io
 
 from sqlite3 import IntegrityError
 from traceback import print_exc
@@ -213,10 +214,10 @@ class Admin(commands.Cog):
     @commands.command(name="inactiveroles")
     async def _inactive_roles(self, ctx, *args):
         roles = self.bot.guild.roles
-        with open("inactive roles.csv", "w", newline='') as fd:
-            writer = csv.writer(fd)
-            for role in roles:
-                writer.writerow((role.name, len(role.members)))
+        csv_data = '\n'.join(f"{role.name}, {len(role.members)}" for role in roles)
+        mem_file_in = io.BytesIO(csv_data.encode(encoding='utf-8'))
+        await ctx.send(file=discord.File(mem_file_in, filename='Inactive Roles.csv'))
+
 
 
 
