@@ -2,18 +2,16 @@ from discord.ext import commands
 import discord
 from __init__ import exec_sql, handle_errors, re
 
-import traceback
-
 class Board(commands.Cog):
 
-    def __init__(self, bot, sql, exec_sql):
+    def __init__(self, bot, sql):
             self.bot = bot
             self.sql = sql
             self.execute = exec_sql
 
     async def cog_check(self, ctx):
-        return ctx.channel.permissions_for(
-            ctx.author).manage_messages
+        return ctx.channel.permissions_for(ctx.author
+            ).manage_messages
 
     async def cog_command_error(self, ctx, error):
         await handle_errors(ctx, error)
