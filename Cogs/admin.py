@@ -1,6 +1,7 @@
 import aiohttp
 import inspect
 import os
+import csv
 
 from sqlite3 import IntegrityError
 from traceback import print_exc
@@ -208,3 +209,14 @@ class Admin(commands.Cog):
                 (user.id,)).fetchone()[1]
             msg = f"{user.mention} has {log_count} modlog(s)"
             await self.bot.logs.send(msg)
+
+    @commands.command(name="inactiveroles")
+    async def _inactive_roles(self, ctx, *args):
+        roles = self.bot.guild.roles
+        with open("inactive roles.csv", "w", newline='') as fd:
+            writer = csv.writer(fd)
+            for role in roles:
+                writer.writerow((role.name, len(role.members)))
+
+
+
