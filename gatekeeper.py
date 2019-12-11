@@ -12,6 +12,7 @@ try:
     from Cogs.report import Report
     from Cogs.boards import Board
     from Cogs.temperature import Temperature
+    from Cogs.admin import Admin
 except:
     print("a cog is missing or corrupt, download a new version to "
         + "enable full functionality.")
@@ -61,185 +62,6 @@ async def on_member_join(member):
         if chirpers[0] == 1:
             await member.add_roles(bot.roles["freeze"])
 
-
-# full admin only commands
-@bot.command()
-@commands.has_permissions(manage_channels=True)
-async def die(ctx):
-    await ctx.send("Quitting")
-    await exit_bot()
-
-
-@bot.command()
-@commands.has_permissions(manage_channels=True)
-async def restart(ctx):
-    await ctx.send("Restarting")
-    try:
-        await restart_bot()
-    except:
-        traceback.print_exc()
-        sys.exit()
-
-
-@bot.command()
-@commands.has_permissions(manage_channels=True)
-async def messagemin(ctx, m_min):
-    try:
-        bot.settings["num_messages"] = int(m_min)
-        bot.settings_manager.set_settings(bot.settings)
-        
-        msg = ("Minimum message count for linking set to: {m_min}.".
-            format(m_min=m_min))
-    except ValueError:
-        msg = ("Invalid Integer entered for messagemin command")
-    await ctx.send(msg)
-
-
-# trial admin+ commands
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def warn(ctx, *, args:str):
-    users = get_users(ctx.message, args)
-    message = ctx.message
-    for index, user in enumerate(users):
-        try:
-            mod_log = (
-                message.id+index, message.author.id, message.channel.id,
-                message.channel.name, message.guild.id, 
-                message.clean_content, message.created_at, user.id, 0
-                )
-            last_row_id = exec_sql(SQL["ADD_MODLOG"], mod_log)
-            mod_logs = exec_sql(SQL["MOD_LOGS"], (user.id,)).fetchone()[1]
-        except IntegrityError:
-            mod_log = (
-                bot.last_row_id+index, message.author.id, message.channel.id,
-                message.channel.name, message.guild.id, 
-                message.clean_content, message.created_at, user.id, 0
-                )
-            last_row_id = exec_sql(SQL["ADD_MODLOG"], mod_log)
-        if mod_logs % 5 == 0:
-            msg = "{user} has {mod_logs} modlog(s)".format(
-                user=user.mention, mod_logs=mod_logs)
-            await ctx.send(msg)
-
-
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def mute(ctx, *, args:str):
-    users = get_users(ctx.message, args)
-    message = ctx.message
-    for index, user in enumerate(users):
-        try:
-            mod_log = (
-                message.id+index, message.author.id, message.channel.id,
-                message.channel.name, message.guild.id, 
-                message.clean_content, message.created_at, user.id, 1
-                )
-            last_row_id = exec_sql(SQL["ADD_MODLOG"], mod_log)
-            mod_logs = exec_sql(SQL["MOD_LOGS"], (user.id,)).fetchone()[1]
-        except IntegrityError:
-            mod_log = (
-                bot.last_row_id+index, message.author.id, message.channel.id,
-                message.channel.name, message.guild.id, 
-                message.clean_content, message.created_at, user.id, 1
-                )
-            last_row_id = exec_sql(SQL["ADD_MODLOG"], mod_log)
-        if mod_logs % 5 == 0:
-            msg = "{user} has {mod_logs} modlog(s)".format(
-                user=user.mention, mod_logs=mod_logs)
-            await ctx.send(msg)
-
-
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def thaw(ctx, *args):
-    """Unfreezes a user"""
-    users = get_users(ctx.message, *args)
-    for user in users:
-        await user.remove_roles(bot.roles["freeze"])
-        chirpers = exec_sql(SQL["RETRIEVE_ROLE"], (user.id,)).fetchone()
-        if chirpers is not None:
-            for index, (key, chirper) in enumerate(bot.roles.items()):
-                if(index >= len(chirpers)):
-                    break
-                if chirpers[index] == 1 and key.startswith("chirper"):
-                    await user.add_roles(chirper)
-        msg = "Unfroze user: {user_mention}".format(
-            user_mention=user.mention)
-        user_roles = store_roles(user, 0)
-        await ctx.send(msg)
-
-
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def freeze(ctx, *args):
-    del_roles = ["chirper", "chirper2", "chirper3", "chirper4"]
-    users = get_users(ctx.message, *args)
-    for user in users:
-        if(bot.roles["freeze"] in user.roles):
-            msg = "{user_mention} is already frozen!".format(
-                user_mention=user.mention)
-        else:
-            await user.add_roles(bot.roles["freeze"])
-            store_roles(user, 1)
-            await remove_roles(user, del_roles)
-            msg = "Froze user: {user_mention}".format(
-                user_mention=user.mention)
-        await ctx.send(msg)
-
-
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def customs(ctx, *args):
-    roles = ["chirper","chirper2","chirper3","chirper4"]
-    users = get_users(ctx.message, *args)
-    pass
-    for user in users:
-        await user.add_roles(bot.roles["youngling"])
-        await remove_roles(user, roles)
-        msg = ("Removed access to rules/chirper for {user_mention}".
-            format(user_mention=user.mention))
-        await ctx.send(msg)
-
-
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def passport(ctx, *args):
-    users = get_users(ctx.message, *args)
-    for user in users:
-        await user.remove_roles(bot.roles["youngling"])
-        msg = "Granted access to rules for {user_mention}".format(
-            user_mention=user.mention)
-        await ctx.send(msg)
-
-
-@bot.command(name="voters")
-@commands.has_permissions(manage_messages=True)
-async def _voters(ctx, *args):
-    try:
-        voters = int(re.search('[0-9]+', ' '.join(
-            args).result).group())
-    except:
-        voters = 5
-    for ch in ctx.message.channel_mentions:
-        msg = ch.name + "\n"
-        get_voters = exec_sql(SQL["VOTERS"], (ch.id, voters))
-        for data in get_voters:
-            voter = bot.get_user(data[0])
-            if voter is not None and voter.bot == False:
-                msg += voter.name + "#" + voter.discriminator + "\n"
-        await ctx.send(msg)
-
-
-@bot.command(name="modlogs")
-@commands.has_permissions(manage_messages=True)
-async def _mod_logs(ctx, *args):
-    users = get_users(ctx.message, *args)
-    for user in users:
-        log_count = exec_sql(
-            SQL["MOD_LOGS"], (user.id,)).fetchone()[1]
-        msg = "{} has {} modlog(s)".format(user.mention, log_count)
-        await bot.logs.send(msg)
 
 
 @commands.command(name="help")
@@ -296,12 +118,12 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
             bot.fun_roles[role_key] = bot.guild.get_role(role_id)
         print(ready_msg.format(name=bot.user, id=bot.user.id))
         bot.logs = bot.get_channel(bot.settings["logs"])
-        
         bot.remove_command("help")
         bot.add_command(_custom_help)
-        bot.add_cog(Report(bot, SQL, exec_sql))
-        bot.add_cog(Board(bot, SQL, exec_sql))
+        bot.add_cog(Report(bot, SQL))
+        bot.add_cog(Board(bot, SQL))
         bot.add_cog(Temperature(bot))
+        bot.add_cog(Admin(bot, SQL, aiosession))
     except:
         traceback.print_exc()
 

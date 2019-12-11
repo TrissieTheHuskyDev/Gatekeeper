@@ -89,7 +89,7 @@ class Program_Settings:
         """reset settings to default values"""
         test_mode = self.test_mode
         settings = {
-            "setting_version": "v0.1.5",
+            "setting_version": "v0.1.5.1a",
             "db_file": "creepydb",
             "secret_file": "secret.json",
             "settings_file": "settings",
@@ -99,6 +99,7 @@ class Program_Settings:
             # These are absolutely vital to the bot's operation, 
             # don't change them unless needed.
             "bot_settings":{
+                "voters": 5,
                 "num_messages": 5,
                 "gaius": 356878329602768897,
                 "logs": (627500108618924052 if not test_mode else 

@@ -161,27 +161,6 @@ def exec_sql(sql_string, values):
         return cur
 
 
-async def exit_bot():
-    """Helper to exit bot and then exit system"""
-    try:
-        await aiosession.close()
-    except:
-        pass
-    await bot.logout()
-    sys.exit()
-
-
-async def restart_bot():
-    """restarts bot"""
-    frame = inspect.stack()[1].frame
-    file_name = frame.f_code.co_filename # get name of main file
-    try:
-        await aiosession.close()
-    except:
-        pass
-    os.execl(sys.executable, sys.executable, * sys.argv)
-
-
 # error handler
 async def handle_errors(ctx, error):
     """Class to handle command errors"""

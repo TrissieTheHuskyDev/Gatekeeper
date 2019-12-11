@@ -5,7 +5,7 @@ from __init__ import exec_sql, handle_errors
 class Report(commands.Cog):
     reports = []
 
-    def __init__(self, bot, sql, exec_sql):
+    def __init__(self, bot, sql):
         self.bot = bot
         self.SQL = sql
         self.execute = exec_sql
