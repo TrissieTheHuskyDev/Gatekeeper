@@ -16,11 +16,11 @@ from __init__ import (exec_sql, handle_errors, re, get_users,
 
 class Admin(commands.Cog):
 
-    def __init__(self, bot, sql, aiosession):
+    def __init__(self, bot, sql):
         self.bot = bot
         self.sql = sql
         self.execute = exec_sql
-        self.aiosession = aiosession
+        self.aiosession = self.bot.aiosession
 
     async def cog_check(self, ctx):
         return ctx.channel.permissions_for(ctx.author
@@ -217,7 +217,3 @@ class Admin(commands.Cog):
         csv_data = '\n'.join(f"{role.name}, {len(role.members)}" for role in roles)
         mem_file_in = io.BytesIO(csv_data.encode(encoding='utf-8'))
         await ctx.send(file=discord.File(mem_file_in, filename='Inactive Roles.csv'))
-
-
-
-

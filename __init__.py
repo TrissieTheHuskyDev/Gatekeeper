@@ -1,9 +1,12 @@
 #!/usr/env/bin python3
 
+__version__ = "0.2.0"
+
 #stdlib imports
 import aiohttp
 import argparse
 import asyncio
+import json
 import inspect
 import os
 import pickle
@@ -18,23 +21,20 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 from sqlite3 import connect, Error, IntegrityError
 
-
+# discord imports
 import discord
 from discord import Client
 from discord.ext import commands
 
 # custom imports
 try:
-    from setting_manager import *
-except:
-    print("settings_manage is missing or corrupt, please download "
-        + "a new version")
-    sys.exit()
-try:
+    from Bin.secrets import Secrets
+    from Bin.setting_manager import Program_Settings
     from sql_constants import SQL_STRINGS as SQL
+
+    from Bin.settings import Settings as stest
 except:
-    print("sql_constants.py is missing or corrupt, please download "
-        +"a new version")
+    traceback.print_exc()
     sys.exit()
 
 
@@ -176,14 +176,6 @@ async def handle_errors(ctx, error):
         traceback.print_exc()
     return
 
-
-# bot initialization
-bot = commands.Bot(command_prefix=("gk!", "!"), case_insensitive=True,
-    description="A bot for basic commands", self_bot=False,
-    help_command=None)
-aiosession = aiohttp.ClientSession(loop=bot.loop)
-
-
 # command line argument handler
 def _args(description="Gatekeeper command line arguments"):
     """Parse command line arguments"""
@@ -194,6 +186,15 @@ def _args(description="Gatekeeper command line arguments"):
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
     return args
+
+# bot initialization
+bot = commands.Bot(command_prefix=("gk! ", "gk!", "!"), 
+    case_insensitive=True, description="A bot for basic commands",
+    self_bot=False, help_command=None)
+
+
+
+
 
 
 def start(secret_file=r".\secret"):
@@ -207,6 +208,16 @@ def start(secret_file=r".\secret"):
     reset = cli_args.reset
     verbosity = cli_args.verbose
 
+    #sttng = stest(test_mode=test_mode, reset=reset)
+    with open("init.json", "r") as fd:
+        sttng = stest(json.load(fd))
+    sttng.setattr(test_mode=test_mode, reset=reset, verbose=verbosity)
+    for key,val in vars(sttng).items():
+        print(f"{key} = {val}")
+        
+    print(sttng.test_mode)
+    print(sttng.reset)
+    print(sttng.verbose)
     # setup settings and check settings_integrity
     settings_manager = Program_Settings(
         reset=reset, test_mode=test_mode)

@@ -1,12 +1,18 @@
 #!/usr/env/bin python3
 # Valley Discord Chat Bot
+__version__ = "0.1.5"
+
 import os
 import sys
+import traceback
+
+import json
+
 try:
     import __init__
     from __init__ import *
 except:
-    print("__init__.py is missing or corrupt, please download a new version")
+    traceback.print_exc()
     sys.exit()
 try:
     from Cogs.report import Report
@@ -17,6 +23,7 @@ except:
     print("a cog is missing or corrupt, download a new version to "
         + "enable full functionality.")
     traceback.print_exc()
+    sys.exit()
 
 
 # command helpers
@@ -31,21 +38,10 @@ async def on_message(message):
     await add_message(message)
     if message.author == bot.user:
         return
-    try:
-        mess = message.content.lower()
-        if "http" in mess and not check_whitelist(message):
-            await can_post(message)
-        try:
-            if message.content.lower().startswith("gk! "):
-                message.content = "gk!"+message.content[4:]
-        except:
-            traceback.print_exc()
-            sys.exit()
-        await bot.process_commands(message)
-    except AttributeError:
-        traceback.print_exc()
-    except:
-        traceback.print_exc()
+    mess = message.content.lower()
+    if "http" in mess and not check_whitelist(message):
+        await can_post(message)
+    await bot.process_commands(message)
 
 
 @bot.event
@@ -109,6 +105,9 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
         # settings. Stores the roles into bot.settings["roles"]
         # which is cleared when bot exits to allow for portability
         # and easier maintainability.
+
+        
+        bot.aiosession = aiohttp.ClientSession(loop=bot.loop)
         bot.guild = bot.get_guild(bot.settings["guild"])
         bot.roles = OrderedDict()
         bot.fun_roles = OrderedDict()
@@ -120,10 +119,11 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
         bot.logs = bot.get_channel(bot.settings["logs"])
         bot.remove_command("help")
         bot.add_command(_custom_help)
+        
         bot.add_cog(Report(bot, SQL))
         bot.add_cog(Board(bot, SQL))
         bot.add_cog(Temperature(bot))
-        bot.add_cog(Admin(bot, SQL, aiosession))
+        bot.add_cog(Admin(bot, SQL))
     except:
         traceback.print_exc()
 

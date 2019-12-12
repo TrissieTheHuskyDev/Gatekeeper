@@ -14,6 +14,8 @@
   
   1.0.0.a >= discord.py >= 1.2.5
   
+  aiohttp >= 3.6.2
+  
  # Installing
   Make sure you have the most up to date version of discord.py with
   py -m pip install -U discord.py
