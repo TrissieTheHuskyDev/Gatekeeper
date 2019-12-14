@@ -31,7 +31,6 @@ try:
     from Bin.secrets import Secrets
     from Bin.setting_manager import Program_Settings
     from sql_constants import SQL_STRINGS as SQL
-
     from Bin.settings import Settings as stest
 except:
     traceback.print_exc()

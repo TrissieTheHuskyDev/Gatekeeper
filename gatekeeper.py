@@ -19,6 +19,7 @@ try:
     from Cogs.boards import Board
     from Cogs.temperature import Temperature
     from Cogs.admin import Admin
+    from Cogs.logs import Logs
 except:
     print("a cog is missing or corrupt, download a new version to "
         + "enable full functionality.")
@@ -124,6 +125,7 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
         bot.add_cog(Board(bot, SQL))
         bot.add_cog(Temperature(bot))
         bot.add_cog(Admin(bot, SQL))
+        bot.add_cog(Logs(bot, SQL))
     except:
         traceback.print_exc()
 
