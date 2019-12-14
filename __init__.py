@@ -210,7 +210,8 @@ def start(secret_file=r".\secret"):
     #sttng = stest(test_mode=test_mode, reset=reset)
     with open("init.json", "r") as fd:
         sttng = stest(json.load(fd))
-    sttng.setattr(test_mode=test_mode, reset=reset, verbose=verbosity)
+    sttng.setattr(test_mode=test_mode, reset=reset, 
+        verbose=verbosity)
     for key,val in vars(sttng).items():
         print(f"{key} = {val}")
         
