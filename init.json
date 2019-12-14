@@ -1,8 +1,11 @@
 {
     "version": "0.1.5a",
     "guild_name": "XOR_KERNELS",
-    "freeze_removal": ["chirper","chirper1","chirper2","chirper3","chirper4"],
     "reset": null,
     "test_mode": null,
-    "verbose": null
+    "verbose": null,
+    "freeze_removal": ["chirper","chirper1","chirper2","chirper3","chirper4"],
+    "image_permissions":"chirper2",
+    "store_roles":["chirper", "chirper2", "chirper3", "chirper4", "freeze", "youngling"]
+    
 }
