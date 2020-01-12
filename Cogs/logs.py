@@ -14,6 +14,14 @@ class Logs(commands.Cog):
         self.bot = bot
         self.sql = sql
 
+    async def send_log(self, author, *fields, **embed_info):
+        """Takes a series of args and sends a log to the logs channel"""
+        embed = discord.Embed(title="test", description="description", color=0x00ff00)
+        embed.set_author(
+            name=f"{author.name}#{author.discriminator}({author.id})",
+            icon_url=author.avatar_url)
+        await self.bot.logs.send(embed=embed)
+
     async def cog_check(self, ctx):
         return ctx.channel.has_permissions(ctx.author
             ).manage_channels
@@ -25,6 +33,7 @@ class Logs(commands.Cog):
         new_roles = [role.name for role in 
             set(after.roles)-set(before.roles)]
         if "chirper2" in new_roles:
+            await self.send_log(author=before)
             await self.bot.logs.send(f"{before.mention} can now post images")
             
 

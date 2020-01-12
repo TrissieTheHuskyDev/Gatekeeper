@@ -23,13 +23,13 @@ class Temperature(commands.Cog):
             ctx.channel.permissions_for(ctx.author).manage_messages)
 
     async def temp_decay(self, user, role):
+        """waits temp_decay seconds and removes role"""
         await user.add_roles(role)
         await sleep(self.bot.settings["temp_decay"])
         await user.remove_roles(role)
 
     async def _change_temperature(self, ctx, user, temperature):
         """warms/cools user(s) specified"""
-
         if self.bot.fun_roles["heatproof"] in user.roles:
             passed = False
             msg = "I can't {} {} they're wearing thermal undies.".format(
@@ -43,7 +43,8 @@ class Temperature(commands.Cog):
 
     @commands.command(name="warm")
     async def _warm(self, ctx, *args):
-        """warm a user and then add task to remove warm role"""
+        """warm a user and then add task to remove warm 
+            role"""
         if not self.can_warm(ctx):
             return
         users = get_users(ctx.message, *args)
@@ -62,7 +63,8 @@ class Temperature(commands.Cog):
                 
     @commands.command(name="cool")
     async def _cool(self, ctx, *args):
-        """cool a user and then add task to remove cool role"""
+        """cool a user and then add task to remove cool 
+            role"""
         if not self.can_cool(ctx):
             return
         users = get_users(ctx.message, *args)
@@ -72,7 +74,8 @@ class Temperature(commands.Cog):
                     user.mention)
                 await ctx.send(msg)
                 return
-            if not await self._change_temperature(ctx, user, "cool"):
+            if not await self._change_temperature(
+                    ctx, user, "cool"):
                 return
             coolin = create_task(self.temp_decay(
                 user, self.bot.fun_roles["cold"]))

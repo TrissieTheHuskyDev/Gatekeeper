@@ -18,18 +18,21 @@ class Report(commands.Cog):
         await handle_errors(ctx, error)
         
     def form_report(self, sql_key, channel=""):
+        """Retrieve results for report and return list"""
         results = self.execute(self.SQL[sql_key], ((channel.id,)
             if channel else ())).fetchone()
         return ([channel.name, results[0], results[1]] 
             if channel else [results[0], results[1]])
 
     def get_sql(self, args):
+        """Assist in formatting sql string for report query"""
         for time in ["day", "week", "month"]:
             if time in args:
                 return time.upper()
         return ""
 
     async def submit_report(self, ctx):
+        """Print each report"""
         for report in self.reports:
             if len(report) == 2:
                 await ctx.send("\n{}: Messages: {} Users: {}".format(
@@ -39,6 +42,8 @@ class Report(commands.Cog):
                     report[0], report[1], report[2]))
     
     async def report_prep(self, ctx, *args, sql_prefix=""):
+        """Decide what format report is and dispatch
+            appropriately"""
         self.reports = []        
         arg_str = ' '.join(args)
         sql_key = sql_prefix+self.get_sql(arg_str)
@@ -48,7 +53,6 @@ class Report(commands.Cog):
                     self.form_report(sql_key, channel))
         else:
             try:
-                print(sql_key)
                 self.reports.append(
                     self.form_report(sql_key))
             except:
@@ -57,13 +61,15 @@ class Report(commands.Cog):
         self.reports = []
         return
 
-    async def none_found(ctx, *args):
+    async def none_found(self, ctx, *args):
+        """reports no category found"""
         await ctx.send("Nothing found with search: {}".format(
             ' '.join(args)))
         return
 
     @commands.command()
     async def filter(self, ctx, *args):
+        """filter by category"""
         ctx.ch_list = []
         arg_str = ' '.join(args)
         for category in self.bot.guild.categories:
@@ -76,6 +82,7 @@ class Report(commands.Cog):
 
     @commands.command()
     async def all(self, ctx, *args):
+        """all messages for channel mentions"""
         if len(ctx.message.channel_mentions) >= 1:
             ctx.ch_list = ctx.message.channel_mentions
             await self.report_prep(ctx, *args, sql_prefix="ALL")
@@ -85,20 +92,24 @@ class Report(commands.Cog):
             
     @commands.command()
     async def cat(self, ctx, *args):
+        """current category"""
         ctx.ch_list = ctx.channel.category.channels
         await self.report_prep(ctx, *args)
 
     @commands.command()
     async def week(self, ctx, *args):
+        """ch mention week report"""
         ctx.ch_list = ctx.message.channel_mentions
         await self.report_prep(ctx, *args, sql_prefix="WEEK")
 
     @commands.command()
     async def day(self, ctx, *args):
+        """ch mention day report"""
         ctx.ch_list = ctx.message.channel_mentions
         await self.report_prep(ctx, *args, sql_prefix="DAY")
 
     @commands.command()
     async def month(self, ctx, *args):
+        """ch mention month report"""
         ctx.ch_list = ctx.message.channel_mentions
         await self.report_prep(ctx, *args, sql_prefix="MONTH")
