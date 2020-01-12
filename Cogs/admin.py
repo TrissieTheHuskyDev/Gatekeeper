@@ -134,21 +134,33 @@ class Admin(commands.Cog):
                 msg = f"{user.mention} has {mod_logs} modlog(s)"
                 await self.bot.logs.send(msg)
 
+    async def restore_roles(self, user):
+        """Queries db and restores chirper roles"""
+        chirpers = self.execute(self.sql["RETRIEVE_ROLE"], (user.id,)).fetchone()
+        if chirpers is not None:
+            for index, (key, chirper) in enumerate(self.bot.roles.items()):
+                if(index >= len(chirpers)):
+                    break
+                if chirpers[index] == 1 and key.startswith("chirper"):
+                    await user.add_roles(chirper)
+
     @commands.command(name="thaw")
     async def _thaw(self, ctx, *args):
         """Unfreezes a user"""
         users = get_users(ctx.message, *args)
         for user in users:
-            await user.remove_roles(self.bot.roles["freeze"])
+            await self.restore_roles(user)
+            await remove_roles(user, ["freeze"])
+            '''await user.remove_roles(self.bot.roles["freeze"])
             chirpers = self.execute(self.sql["RETRIEVE_ROLE"], (user.id,)).fetchone()
             if chirpers is not None:
                 for index, (key, chirper) in enumerate(self.bot.roles.items()):
                     if(index >= len(chirpers)):
                         break
                     if chirpers[index] == 1 and key.startswith("chirper"):
-                        await user.add_roles(chirper)
+                        await user.add_roles(chirper)'''
             msg = f"Unfroze user: {user.mention}"
-            user_roles = store_roles(user, 0)
+            user_roles = await store_roles(user, 0)
             await ctx.send(msg)
 
     @commands.command(name="freeze")
@@ -161,7 +173,7 @@ class Admin(commands.Cog):
                     user_mention=user.mention)
             else:
                 await user.add_roles(self.bot.roles["freeze"])
-                store_roles(user, 1)
+                await store_roles(user, 1)
                 await remove_roles(user, del_roles)
                 msg = f"Froze user: {user.mention}"
             await ctx.send(msg)

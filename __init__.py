@@ -69,7 +69,7 @@ def is_role_set(user_roles, role):
         return 0
 
 
-def store_roles(user, to_freeze):
+async def store_roles(user, to_freeze):
     """create or replace SQL entry with roles for user"""
     role_store = OrderedDict()
     role_store["id"] = user.id

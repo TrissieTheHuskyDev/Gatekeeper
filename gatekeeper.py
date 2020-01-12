@@ -63,6 +63,14 @@ async def on_member_join(member):
     if chirpers is not None:
         if chirpers[0] == 1:
             await member.add_roles(bot.roles["freeze"])
+        else:
+            await bot._BotBase__cogs['Admin'].restore_roles(member)
+
+@bot.event
+async def on_member_remove(member):
+    """Save member roles on quitting server"""
+    if bot.roles['freeze'] not in member.roles:
+        await store_roles(member,0)
 
 
 
@@ -125,7 +133,6 @@ async def on_ready(ready_msg="Logged in as {name} ({id})",
         bot.logs = bot.get_channel(bot.settings["logs"])
         bot.remove_command("help")
         bot.add_command(_custom_help)
-        
         bot.add_cog(Report(bot, SQL))
         bot.add_cog(Board(bot, SQL))
         bot.add_cog(Temperature(bot))
