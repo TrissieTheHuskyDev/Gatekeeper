@@ -187,13 +187,9 @@ def _args(description="Gatekeeper command line arguments"):
     return args
 
 # bot initialization
-bot = commands.Bot(command_prefix=("gk! ", "gk!", "!"), 
+bot = commands.Bot(command_prefix=("gk! ", "gk!"), 
     case_insensitive=True, description="A bot for basic commands",
     self_bot=False, help_command=None)
-
-
-
-
 
 
 def start(secret_file=r".\secret"):
@@ -212,12 +208,14 @@ def start(secret_file=r".\secret"):
         sttng = stest(json.load(fd))
     sttng.setattr(test_mode=test_mode, reset=reset, 
         verbose=verbosity)
-    for key,val in vars(sttng).items():
+
+    '''for key,val in vars(sttng).items():
         print(f"{key} = {val}")
         
     print(sttng.test_mode)
     print(sttng.reset)
-    print(sttng.verbose)
+    print(sttng.verbose)'''
+
     # setup settings and check settings_integrity
     settings_manager = Program_Settings(
         reset=reset, test_mode=test_mode)
