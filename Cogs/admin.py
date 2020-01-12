@@ -166,9 +166,9 @@ class Admin(commands.Cog):
 
     @commands.command(name="customs")
     async def _customs(self, ctx, *args):
+        """adds youngling and removes chirper roles"""
         roles = ["chirper","chirper2","chirper3","chirper4"]
         users = get_users(ctx.message, *args)
-        pass
         for user in users:
             await user.add_roles(self.bot.roles["youngling"])
             await remove_roles(user, roles)
@@ -206,8 +206,11 @@ class Admin(commands.Cog):
     async def _mod_logs(self, ctx, *args):
         users = get_users(ctx.message, *args)
         for user in users:
-            log_count = self.execute(self.sql["MOD_LOGS"], 
-                (user.id,)).fetchone()[1]
+            try:
+                log_count = self.execute(self.sql["MOD_LOGS"], 
+                    (user.id,)).fetchone()[1]
+            except Exception as exc:
+                log_count = 0
             msg = f"{user.mention} has {log_count} modlog(s)"
             await self.bot.logs.send(msg)
 

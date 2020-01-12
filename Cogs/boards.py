@@ -18,7 +18,16 @@ class Board(commands.Cog):
 
     async def lead_brd(self, ctx, sql_key, board_header, count_str,
         *args, count=10):
-        """function to print out different kinds of leaderboards"""
+        """function to print out different kinds of leaderboards
+        
+        Arguments:
+            sql_key: String of sql string to query
+
+            board_header: string, first line of the board msg
+
+            count_str: type of message to display after a number
+                eg Messages, punishments, etc.
+        """
         sql_statement = self.sql[sql_key]
         if sql_statement.count('?') > 0:
             # get number of users to retrieve and display
@@ -53,13 +62,16 @@ class Board(commands.Cog):
 
     @commands.command(name="leaderboard")
     async def _leader_board(self, ctx, *args):
+        """leaderboard by messages"""
         await self.lead_brd(ctx, "LEADERBOARD", "posters", "Messages", *args)
 
     @commands.command(name="mayoboard")
     async def _mayo_board(self, ctx, *args):
+        """leaderboard by messages containing mayo"""
         await self.lead_brd(ctx, "MAYOBOARD", "mayoers", "Mayos", *args)
 
     @commands.command(name="modscoreboard")
     async def _mod_score_board(self, ctx, *args):
+        """leaderboard by punishments handed out"""
         await self.lead_brd(ctx, "MOD_SCOREBOARD", "punishers",
             "Punishments", *args)
