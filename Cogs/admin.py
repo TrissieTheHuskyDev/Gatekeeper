@@ -80,10 +80,11 @@ class Admin(commands.Cog):
         await self.bot.logs.send(msg)
 
     # Commands available to trial mods and up
-    @commands.command(name="warn")
-    async def _warn(self, ctx, *, args:str):
-        users = get_users(ctx.message, args)
-        message = ctx.message
+    #@commands.command(name="warn")
+    async def _warn(self, msg):
+        args = msg.content.lower().split(" ")[1:]
+        users = get_users(msg, *args)
+        message = msg
         for index, user in enumerate(users):
             try:
                 mod_log = (
@@ -106,10 +107,11 @@ class Admin(commands.Cog):
                 msg = f"{user.mention} has {mod_logs} modlog(s)"
                 await self.bot.logs.send(msg)
 
-    @commands.command(name="mute")
-    async def _mute(self, ctx, *, args:str):
-        users = get_users(ctx.message, args)
-        message = ctx.message
+    #@commands.command(name="mute")
+    async def _mute(self, msg):
+        args = msg.content.lower().split(" ")[1:]
+        users = get_users(msg, *args)
+        message = msg
         for index, user in enumerate(users):
             try:
                 mod_log = (

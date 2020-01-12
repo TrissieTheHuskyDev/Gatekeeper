@@ -57,7 +57,7 @@ class Report(commands.Cog):
         self.reports = []
         return
 
-    async def none_found(ctx, *args):
+    async def none_found(self, ctx, *args):
         await ctx.send("Nothing found with search: {}".format(
             ' '.join(args)))
         return

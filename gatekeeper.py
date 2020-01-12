@@ -42,6 +42,11 @@ async def on_message(message):
     mess = message.content.lower()
     if "http" in mess and not check_whitelist(message):
         await can_post(message)
+    if message.author.guild_permissions.manage_messages:
+        if mess.startswith("!mute"):
+            await bot._BotBase__cogs['Admin']._mute(message)
+        elif mess.startswith("!warn"):
+            await bot._BotBase__cogs['Admin']._warn(message)
     await bot.process_commands(message)
 
 
