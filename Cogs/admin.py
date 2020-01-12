@@ -38,7 +38,6 @@ class Admin(commands.Cog):
         await self.bot.logout()
         sys.exit()
 
-
     async def restart_bot(self):
         """restarts bot"""
         frame = inspect.stack()[1].frame
@@ -49,6 +48,16 @@ class Admin(commands.Cog):
             pass
         # await self.bot.logout()
         os.execl(sys.executable, sys.executable, * sys.argv)
+
+    async def restore_roles(self, user):
+        """Queries db and restores chirper roles"""
+        chirpers = self.execute(self.sql["RETRIEVE_ROLE"], (user.id,)).fetchone()
+        if chirpers is not None:
+            for index, (key, chirper) in enumerate(self.bot.roles.items()):
+                if(index >= len(chirpers)):
+                    break
+                if chirpers[index] == 1 and key.startswith("chirper"):
+                    await user.add_roles(chirper)
 
     # commands available to full mods
     @commands.command(name="die")
@@ -134,15 +143,7 @@ class Admin(commands.Cog):
                 msg = f"{user.mention} has {mod_logs} modlog(s)"
                 await self.bot.logs.send(msg)
 
-    async def restore_roles(self, user):
-        """Queries db and restores chirper roles"""
-        chirpers = self.execute(self.sql["RETRIEVE_ROLE"], (user.id,)).fetchone()
-        if chirpers is not None:
-            for index, (key, chirper) in enumerate(self.bot.roles.items()):
-                if(index >= len(chirpers)):
-                    break
-                if chirpers[index] == 1 and key.startswith("chirper"):
-                    await user.add_roles(chirper)
+
 
     @commands.command(name="thaw")
     async def _thaw(self, ctx, *args):
@@ -151,14 +152,6 @@ class Admin(commands.Cog):
         for user in users:
             await self.restore_roles(user)
             await remove_roles(user, ["freeze"])
-            '''await user.remove_roles(self.bot.roles["freeze"])
-            chirpers = self.execute(self.sql["RETRIEVE_ROLE"], (user.id,)).fetchone()
-            if chirpers is not None:
-                for index, (key, chirper) in enumerate(self.bot.roles.items()):
-                    if(index >= len(chirpers)):
-                        break
-                    if chirpers[index] == 1 and key.startswith("chirper"):
-                        await user.add_roles(chirper)'''
             msg = f"Unfroze user: {user.mention}"
             user_roles = await store_roles(user, 0)
             await ctx.send(msg)
